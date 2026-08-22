@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Badge, Button, Dropdown, List, Typography, Empty, Spin } from 'antd'
+import { Badge, Button, Dropdown, Typography, Empty, Spin } from 'antd'
 import { BellOutlined } from '@ant-design/icons'
 import type { NotificationDTO } from '@/types/notifications'
 
@@ -76,14 +76,13 @@ export default function NotificationBell() {
       ) : notifications.length === 0 ? (
         <Empty description="No notifications" image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ) : (
-        <List
-          size="small"
-          dataSource={notifications}
-          renderItem={(item) => {
+        <div className="divide-y divide-gray-100">
+          {notifications.map((item) => {
             const isUnread = !item.readAt
             return (
-              <List.Item
-                className={`cursor-pointer transition-colors p-2 rounded ${
+              <div
+                key={item.id}
+                className={`cursor-pointer transition-colors p-2 rounded my-0.5 ${
                   isUnread ? 'bg-blue-50/60 font-medium' : 'hover:bg-gray-50'
                 }`}
                 onClick={() => isUnread && markSingleRead(item.id)}
@@ -92,17 +91,17 @@ export default function NotificationBell() {
                   <div className="flex justify-between items-start">
                     <span className="text-gray-800">{item.message}</span>
                     {isUnread && (
-                      <span className="h-2 w-2 rounded-full bg-blue-500 flex-shrink-0 ml-2 mt-1"></span>
+                      <span className="h-2 w-2 rounded-full bg-blue-500 flex-shrink-0 ml-2 mt-1" />
                     )}
                   </div>
                   <span className="text-gray-400 mt-1 text-[10px]">
                     {new Date(item.createdAt).toLocaleString()}
                   </span>
                 </div>
-              </List.Item>
+              </div>
             )
-          }}
-        />
+          })}
+        </div>
       )}
     </div>
   )
