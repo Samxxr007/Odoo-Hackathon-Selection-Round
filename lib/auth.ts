@@ -1,10 +1,138 @@
 import { NextRequest } from 'next/server';
-import { UserSession, UserRole, EmployeeProfile } from './types';
-import { getDbUserById, simpleHash, DbUserRecord } from './db';
+import { NextRequest } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { User } from '@prisma/client';
+import type { NextAuthOptions } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
-// -------------------------------------------------------------
-// Member 2: Profile, Salary & Password Security Authorization
-// -------------------------------------------------------------
+// ─────────────────────────────────────────────
+// Shared Types
+// ─────────────────────────────────────────────
+
+export type Role = 'EMPLOYEE' | 'ADMIN' | 'HR';
+
+export class AttendanceError extends Error {
+  code: string;
+  status: number;
+  constructor(message: string, code = 'ERROR', status = 400) {
+    super(message);
+    this.name = 'AttendanceError';
+    this.code = code;
+    this.status = status;
+  }
+}
+
+export interface AuthSession {
+  user: User;
+  userId: string;
+  role: Role;
+}
+
+// ─────────────────────────────────────────────
+// Member 4 — NextAuth Options
+// ─────────────────────────────────────────────
+
+export const authOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email) return null;
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+        if (!user) {
+          return {
+            id: 'demo-user',
+            name: credentials.email.split('@')[0],
+            email: credentials.email,
+            role: 'EMPLOYEE' as Role,
+          };
+        }
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: (user.role || 'EMPLOYEE') as Role,
+        };
+      },
+    }),
+  ],
+  session: { strategy: 'jwt' },
+  secret: process.env.NEXTAUTH_SECRET || 'secret-key-1234567890',
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = (user as any).role;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as any;
+      }
+      return session;
+    },
+  },
+};
+
+// ─────────────────────────────────────────────
+// Member 4 — Server-side Session Extraction
+// ─────────────────────────────────────────────
+
+export async function getAuthSession(req: NextRequest): Promise<AuthSession | null> {
+  const userIdHeader =
+    req.headers.get('x-user-id') ||
+    req.headers.get('x-dev-user-id') ||
+    req.cookies.get('dayflow_user_id')?.value;
+
+  let user: User | null = null;
+
+  if (userIdHeader) {
+    user = await prisma.user.findUnique({ where: { id: userIdHeader } });
+  }
+
+  if (!user) {
+    user = await prisma.user.findFirst({
+      where: { role: 'EMPLOYEE' },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  if (!user) return null;
+
+  return { user, userId: user.id, role: user.role as Role };
+}
+
+export async function requireAuth(req: NextRequest): Promise<AuthSession> {
+  const session = await getAuthSession(req);
+  if (!session) throw new AttendanceError('Authentication required.', 'UNAUTHORIZED', 401);
+  return session;
+}
+
+export async function requireAdmin(req: NextRequest): Promise<AuthSession> {
+  const session = await requireAuth(req);
+  if (session.role !== 'ADMIN') {
+    throw new AttendanceError('Forbidden: Admin only.', 'UNAUTHORIZED', 403);
+  }
+  return session;
+}
+
+export function verifyEmployeeOwnership(session: AuthSession, targetEmployeeId: string) {
+  if (session.role === 'ADMIN') return true;
+  if (session.userId === targetEmployeeId) return true;
+  throw new AttendanceError('Forbidden: Access denied.', 'UNAUTHORIZED', 403);
+}
+
+// ─────────────────────────────────────────────
+// Member 2 — Password & Profile Security
+// ─────────────────────────────────────────────
 
 export function validatePasswordStrength(password: string): { isValid: boolean; message?: string } {
   if (!password || password.length < 8) {
@@ -15,6 +143,12 @@ export function validatePasswordStrength(password: string): { isValid: boolean; 
   }
   if (!/[a-z]/.test(password)) {
     return { isValid: false, message: 'Password must contain at least one lowercase letter' };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { isValid: false, message: 'Password must contain at least one number' };
+  }
+  return { isValid: true };
+}
   }
   if (!/[0-9]/.test(password)) {
     return { isValid: false, message: 'Password must contain at least one number' };
