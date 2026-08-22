@@ -36,63 +36,63 @@ export const AdminFilters: React.FC<AdminFiltersProps> = ({
   const statusOptions = ['ALL', 'PRESENT', 'ABSENT', 'HALF_DAY', 'LEAVE'];
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+    <div className="bg-[#FFFFFF] p-5 rounded-2xl border border-[#E5ECF2] shadow-xs space-y-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Date Selector */}
         <div className="flex items-center gap-2">
           <button
             onClick={handlePrevDate}
-            className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-[#F4F7FB] border border-[#E5ECF2] hover:bg-white text-[#1A1D24] transition-colors cursor-pointer"
             title="Previous Day"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4 text-[#8F9CAE]" />
           </button>
 
-          <div className="flex items-center gap-2 px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
-            <Calendar className="w-4 h-4 text-[#0077FF] dark:text-[#38BDF8]" />
+          <div className="flex items-center gap-2 px-3.5 py-2 bg-[#F4F7FB] border border-[#E5ECF2] rounded-xl">
+            <Calendar className="w-4 h-4 text-[#0077FF]" />
             <input
               type="date"
               value={currentDate}
               onChange={(e) => e.target.value && onChangeDate(e.target.value)}
-              className="bg-transparent font-bold text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none cursor-pointer"
+              className="bg-transparent font-bold text-[#1A1D24] text-xs sm:text-sm focus:outline-none cursor-pointer"
             />
           </div>
 
           <button
             onClick={handleNextDate}
-            className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-[#F4F7FB] border border-[#E5ECF2] hover:bg-white text-[#1A1D24] transition-colors cursor-pointer"
             title="Next Day"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4 text-[#8F9CAE]" />
           </button>
         </div>
 
         {/* Search Employee Bar */}
         <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8F9CAE]" />
           <input
             type="text"
             placeholder="Search employee by name, email, or department..."
             value={search}
             onChange={(e) => onChangeSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0077FF]/20 focus:border-[#0077FF]"
+            className="w-full pl-10 pr-4 py-2 bg-[#F4F7FB] border border-[#E5ECF2] rounded-xl text-xs sm:text-sm text-[#1A1D24] placeholder:text-[#8F9CAE] focus:outline-none focus:ring-2 focus:ring-[#0077FF]/20 focus:border-[#0077FF]"
           />
         </div>
       </div>
 
       {/* Status Filter Pills */}
-      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-2">Filter Status:</span>
+      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#E5ECF2]">
+        <span className="text-xs font-bold text-[#8F9CAE] uppercase tracking-wider mr-2">Filter Status:</span>
         {statusOptions.map((st) => {
           const isActive = selectedStatus.toUpperCase() === st;
           return (
             <button
               key={st}
               onClick={() => onChangeStatus(st)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-[#0077FF] text-white shadow-xs'
-                  : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700'
+                  ? 'bg-[#EAF3FF] text-[#0077FF] border border-[#E5ECF2] shadow-2xs'
+                  : 'bg-[#F4F7FB] text-[#8F9CAE] hover:text-[#1A1D24] hover:bg-white border border-[#E5ECF2]'
               }`}
             >
               {st === 'ALL' ? 'All Status' : st.replace('_', ' ')}

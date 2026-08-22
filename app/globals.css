@@ -1,27 +1,41 @@
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────
-   Brand & Theme Design Tokens (Pure Clean Light Mode)
+   Official Design System Tokens (Pure Light Mode)
    ───────────────────────────────────────────── */
 :root {
-  --color-primary: #0077FF;
-  --color-primary-hover: #0060CC;
-  --color-sky: #00B7FE;
-  --color-warning: #F9911E;
+  /* Primary & Brand */
+  --primary-blue: #0077FF;
+  --primary-blue-alt: #0084FF;
+  --primary-blue-hover: #0066DD;
+  --vivid-sky: #00B7FE;
+
+  /* Accent & Data */
+  --alert-orange: #F9911E;
+  --light-blue-tint: #EAF3FF;
   --color-present: #22C55E;
   --color-absent: #EAB308;
   --color-leave: #00B7FE;
 
+  /* Neutrals & Backgrounds */
+  --base-white: #FFFFFF;
+  --cool-gray-bg: #F4F7FB;
+  --border-gray: #E5ECF2;
+
+  /* Typography */
+  --primary-text: #1A1D24;
+  --muted-text: #8F9CAE;
+
+  /* Tailwind semantic bindings */
   --background: #F4F7FB;
-  --foreground: #0F172A;
-  --card-bg: #FFFFFF;
-  --card-border: #E2E8F0;
-  --text-muted: #64748B;
+  --foreground: #1A1D24;
   --dayflow-bg: #F4F7FB;
   --dayflow-surface: #FFFFFF;
-  --dayflow-border: #E2E8F0;
-  --dayflow-text: #0F172A;
-  --dayflow-muted: #64748B;
+  --dayflow-border: #E5ECF2;
+  --dayflow-text: #1A1D24;
+  --dayflow-muted: #8F9CAE;
+  --dayflow-primary: #0077FF;
+  --dayflow-sky: #00B7FE;
 }
 
 @theme inline {
@@ -32,11 +46,13 @@
   --color-dayflow-border: var(--dayflow-border);
   --color-dayflow-text: var(--dayflow-text);
   --color-dayflow-muted: var(--dayflow-muted);
+  --color-dayflow-primary: var(--dayflow-primary);
+  --color-dayflow-sky: var(--dayflow-sky);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: #F4F7FB;
+  color: #1A1D24;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -60,7 +76,7 @@ body {
 }
 
 /* ─────────────────────────────────────────────
-   Clean Enterprise Transitions
+   Transitions & Animations
    ───────────────────────────────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }

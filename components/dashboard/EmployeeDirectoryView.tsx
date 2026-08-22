@@ -11,10 +11,7 @@ import {
   Plane, 
   Plus, 
   Filter, 
-  Briefcase, 
-  Building2,
-  Sparkles,
-  TrendingUp
+  Building2
 } from 'lucide-react'
 import { AttendanceStatusType, Role } from '@prisma/client'
 import type { EmployeeSummary, EmployeeDailyStatus, AuthUser } from '@/types'
@@ -74,19 +71,14 @@ export function EmployeeDirectoryView({
   const isAdmin = currentUser.role === Role.ADMIN
 
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* 1. Header & Hero Section */}
+    <div className="space-y-6 animate-fadeIn">
+      {/* 1. Header Section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-extrabold uppercase tracking-widest text-[#0077FF] dark:text-[#38BDF8] bg-[#0077FF]/10 dark:bg-[#38BDF8]/15 px-3 py-1 rounded-full border border-blue-200/40 dark:border-blue-800/40">
-              Workforce Operations
-            </span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-[#1A1D24] tracking-tight">
             Employee Directory
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-[#8F9CAE] mt-1 font-medium">
             Real-time workplace presence, attendance telemetry, and organizational team roster.
           </p>
         </div>
@@ -94,7 +86,7 @@ export function EmployeeDirectoryView({
         {isAdmin && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-[#0077FF] via-[#0088FF] to-[#00B7FE] hover:opacity-95 text-white font-bold text-sm shadow-lg glow-primary transition-all duration-200 cursor-pointer shrink-0 hover:scale-102 active:scale-98"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#0077FF] hover:bg-[#0066DD] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Add New Employee</span>
@@ -103,89 +95,89 @@ export function EmployeeDirectoryView({
       </div>
 
       {/* 2. Top Summary Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Employees */}
-        <div className="relative group overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs hover:shadow-xl transition-all duration-300">
+        <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5ECF2] p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Staff</span>
-            <div className="w-10 h-10 rounded-2xl bg-[#0077FF]/10 dark:bg-[#38BDF8]/15 text-[#0077FF] dark:text-[#38BDF8] flex items-center justify-center">
-              <Users className="w-5 h-5" />
+            <span className="text-xs font-bold text-[#8F9CAE] uppercase tracking-wider">Total Staff</span>
+            <div className="w-9 h-9 rounded-xl bg-[#EAF3FF] text-[#0077FF] flex items-center justify-center">
+              <Users className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3">
-            <p className="text-3xl font-black text-slate-900 dark:text-white">{stats.total}</p>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Active Enterprise Accounts</p>
+            <p className="text-2xl sm:text-3xl font-black text-[#1A1D24]">{stats.total}</p>
+            <p className="text-[11px] text-[#8F9CAE] font-medium mt-0.5">Active Accounts</p>
           </div>
         </div>
 
         {/* Present in Office */}
-        <div className="relative group overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-3xl border border-emerald-200/60 dark:border-emerald-900/50 p-5 sm:p-6 shadow-xs hover:shadow-xl transition-all duration-300">
+        <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5ECF2] p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Present Today</span>
-            <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <UserCheck className="w-5 h-5" />
+            <span className="text-xs font-bold text-[#22C55E] uppercase tracking-wider">Present Today</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#22C55E] flex items-center justify-center">
+              <UserCheck className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3">
-            <p className="text-3xl font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+            <p className="text-2xl sm:text-3xl font-black text-[#22C55E] flex items-center gap-2">
               {stats.present}
-              <span className="relative flex h-2.5 w-2.5">
+              <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#22C55E]"></span>
               </span>
             </p>
-            <p className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 mt-0.5">Checked In & On Duty</p>
+            <p className="text-[11px] text-[#8F9CAE] font-medium mt-0.5">Checked In & Active</p>
           </div>
         </div>
 
         {/* On Leave */}
-        <div className="relative group overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-3xl border border-sky-200/60 dark:border-sky-900/50 p-5 sm:p-6 shadow-xs hover:shadow-xl transition-all duration-300">
+        <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5ECF2] p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider">On Leave</span>
-            <div className="w-10 h-10 rounded-2xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center">
-              <Plane className="w-5 h-5" />
+            <span className="text-xs font-bold text-[#00B7FE] uppercase tracking-wider">On Leave</span>
+            <div className="w-9 h-9 rounded-xl bg-sky-50 text-[#00B7FE] flex items-center justify-center">
+              <Plane className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3">
-            <p className="text-3xl font-black text-sky-600 dark:text-sky-400">{stats.onLeave}</p>
-            <p className="text-[11px] text-sky-700/80 dark:text-sky-400/80 mt-0.5">Approved Time Off</p>
+            <p className="text-2xl sm:text-3xl font-black text-[#00B7FE]">{stats.onLeave}</p>
+            <p className="text-[11px] text-[#8F9CAE] font-medium mt-0.5">Approved Time Off</p>
           </div>
         </div>
 
         {/* Absent */}
-        <div className="relative group overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-3xl border border-amber-200/60 dark:border-amber-900/50 p-5 sm:p-6 shadow-xs hover:shadow-xl transition-all duration-300">
+        <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5ECF2] p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Absent</span>
-            <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-              <UserX className="w-5 h-5" />
+            <span className="text-xs font-bold text-[#F9911E] uppercase tracking-wider">Absent</span>
+            <div className="w-9 h-9 rounded-xl bg-orange-50 text-[#F9911E] flex items-center justify-center">
+              <UserX className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3">
-            <p className="text-3xl font-black text-amber-600 dark:text-amber-400">{stats.absent}</p>
-            <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 mt-0.5">Not Marked Present</p>
+            <p className="text-2xl sm:text-3xl font-black text-[#F9911E]">{stats.absent}</p>
+            <p className="text-[11px] text-[#8F9CAE] font-medium mt-0.5">Not Marked Present</p>
           </div>
         </div>
       </div>
 
       {/* 3. Search & Filter Controls */}
-      <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs space-y-4">
+      <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5ECF2] p-4 sm:p-5 shadow-xs space-y-4">
         <div className="flex flex-col lg:flex-row items-center gap-4">
           <EmployeeSearch
             onSearch={setSearchQuery}
-            placeholder="Search employees by name, Login ID (e.g. OIJODO...), role, email..."
+            placeholder="Search employees by name, Login ID, role, email..."
             className="w-full lg:max-w-md"
           />
 
           <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
-            <span className="text-xs font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1 shrink-0 mr-1">
+            <span className="text-xs font-bold text-[#8F9CAE] flex items-center gap-1 shrink-0 mr-1">
               <Filter className="w-3.5 h-3.5" /> Department:
             </span>
             <button
               onClick={() => setSelectedDept('ALL')}
-              className={`text-xs font-bold px-3.5 py-2 rounded-2xl transition-all duration-200 shrink-0 cursor-pointer ${
+              className={`text-xs font-bold px-3.5 py-1.5 rounded-xl transition-all shrink-0 cursor-pointer ${
                 selectedDept === 'ALL'
-                  ? 'bg-[#0077FF] text-white shadow-md glow-primary'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  ? 'bg-[#EAF3FF] text-[#0077FF] border border-[#E5ECF2] shadow-2xs'
+                  : 'bg-[#F4F7FB] text-[#8F9CAE] hover:text-[#1A1D24] hover:bg-white border border-[#E5ECF2]'
               }`}
             >
               All ({employees.length})
@@ -194,10 +186,10 @@ export function EmployeeDirectoryView({
               <button
                 key={dept}
                 onClick={() => setSelectedDept(dept)}
-                className={`text-xs font-bold px-3.5 py-2 rounded-2xl transition-all duration-200 shrink-0 cursor-pointer ${
+                className={`text-xs font-bold px-3.5 py-1.5 rounded-xl transition-all shrink-0 cursor-pointer ${
                   selectedDept === dept
-                    ? 'bg-[#0077FF] text-white shadow-md glow-primary'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    ? 'bg-[#EAF3FF] text-[#0077FF] border border-[#E5ECF2] shadow-2xs'
+                    : 'bg-[#F4F7FB] text-[#8F9CAE] hover:text-[#1A1D24] hover:bg-white border border-[#E5ECF2]'
                 }`}
               >
                 {dept}
@@ -219,10 +211,10 @@ export function EmployeeDirectoryView({
           ))}
         </div>
       ) : (
-        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-slate-800 p-16 text-center">
-          <Building2 className="w-14 h-14 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">No employees match your search</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1">
+        <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5ECF2] p-16 text-center shadow-xs">
+          <Building2 className="w-12 h-12 text-[#8F9CAE] mx-auto mb-3 opacity-50" />
+          <h3 className="text-base font-bold text-[#1A1D24]">No employees match your search</h3>
+          <p className="text-xs text-[#8F9CAE] max-w-sm mx-auto mt-1">
             Try adjusting your search keywords or clear the active department filter.
           </p>
         </div>

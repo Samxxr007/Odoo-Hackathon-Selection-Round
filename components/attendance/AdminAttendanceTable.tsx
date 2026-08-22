@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { AttendanceStatusBadge } from './AttendanceStatusBadge';
-import { Edit3, CheckCircle, ShieldAlert } from 'lucide-react';
+import { Edit3 } from 'lucide-react';
 
 interface AdminRecord {
   employeeId: string;
@@ -37,10 +37,10 @@ export const AdminAttendanceTable: React.FC<AdminAttendanceTableProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 text-center space-y-4 shadow-xs">
+      <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5ECF2] p-8 text-center space-y-4 shadow-xs">
         <div className="animate-pulse space-y-3">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-10 bg-slate-100 dark:bg-slate-800 rounded-xl w-full" />
+            <div key={i} className="h-10 bg-[#F4F7FB] rounded-xl w-full" />
           ))}
         </div>
       </div>
@@ -49,27 +49,27 @@ export const AdminAttendanceTable: React.FC<AdminAttendanceTableProps> = ({
 
   if (!records || records.length === 0) {
     return (
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-xs">
+      <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5ECF2] p-12 text-center text-[#8F9CAE] shadow-xs">
         No employee attendance records match the selected date and filters.
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-      <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+    <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5ECF2] shadow-xs overflow-hidden">
+      <div className="p-5 border-b border-[#E5ECF2] flex items-center justify-between">
         <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">Employee Daily Attendance Log</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Real-time attendance tracking and HR correction management</p>
+          <h3 className="text-base font-bold text-[#1A1D24]">Employee Daily Attendance Log</h3>
+          <p className="text-xs text-[#8F9CAE] mt-0.5">Real-time attendance tracking and HR correction management</p>
         </div>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700">
+        <span className="text-xs font-bold px-3 py-1 rounded-lg bg-[#EAF3FF] text-[#0077FF] border border-[#E5ECF2]">
           {records.length} Employees
         </span>
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold border-b border-slate-200 dark:border-slate-800">
+          <thead className="bg-[#F4F7FB] text-[#8F9CAE] text-xs uppercase font-bold border-b border-[#E5ECF2]">
             <tr>
               <th className="py-3.5 px-5">Employee</th>
               <th className="py-3.5 px-5">Check In</th>
@@ -80,47 +80,47 @@ export const AdminAttendanceTable: React.FC<AdminAttendanceTableProps> = ({
               <th className="py-3.5 px-5 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-[#E5ECF2]">
             {records.map((r) => (
-              <tr key={r.employeeId} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+              <tr key={r.employeeId} className="hover:bg-[#F4F7FB] transition-colors">
                 <td className="py-3.5 px-5 whitespace-nowrap">
                   <div className="flex items-center gap-3">
                     <img
                       src={r.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.name)}&background=0077FF&color=fff`}
                       alt={r.name}
-                      className="w-9 h-9 rounded-xl object-cover border border-slate-200 dark:border-slate-700"
+                      className="w-9 h-9 rounded-xl object-cover border border-[#E5ECF2] bg-[#F4F7FB]"
                     />
                     <div>
-                      <div className="font-bold text-slate-900 dark:text-white text-xs">{r.name}</div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400">{r.department} • {r.email}</div>
+                      <div className="font-bold text-[#1A1D24] text-xs">{r.name}</div>
+                      <div className="text-[11px] text-[#8F9CAE]">{r.department} • {r.email}</div>
                     </div>
                   </div>
                 </td>
-                <td className="py-3.5 px-5 text-slate-700 dark:text-slate-300 whitespace-nowrap text-xs">
-                  <span className="font-mono">{r.checkIn}</span>
+                <td className="py-3.5 px-5 text-[#1A1D24] whitespace-nowrap text-xs">
+                  <span className="font-mono font-bold">{r.checkIn}</span>
                   {r.isLate && (
-                    <span className="ml-2 text-[10px] uppercase font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
+                    <span className="ml-2 text-[10px] uppercase font-bold text-[#F9911E] bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200">
                       Late
                     </span>
                   )}
                 </td>
-                <td className="py-3.5 px-5 text-slate-700 dark:text-slate-300 whitespace-nowrap text-xs">
-                  <span className="font-mono">{r.checkOut}</span>
+                <td className="py-3.5 px-5 text-[#1A1D24] whitespace-nowrap text-xs">
+                  <span className="font-mono font-bold">{r.checkOut}</span>
                   {r.isMissingCheckout && (
-                    <span className="ml-2 text-[10px] uppercase font-bold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800" title="Missing Check Out">
+                    <span className="ml-2 text-[10px] uppercase font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
                       Missing
                     </span>
                   )}
                   {r.isCorrected && (
-                    <span className="ml-2 text-[10px] uppercase font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800" title="Corrected by HR">
+                    <span className="ml-2 text-[10px] uppercase font-bold text-[#0077FF] bg-[#EAF3FF] px-1.5 py-0.5 rounded border border-[#E5ECF2]">
                       Corrected
                     </span>
                   )}
                 </td>
-                <td className="py-3.5 px-5 text-[#0077FF] dark:text-[#38BDF8] font-bold whitespace-nowrap text-xs">
+                <td className="py-3.5 px-5 text-[#0077FF] font-bold whitespace-nowrap text-xs">
                   {r.workHours}
                 </td>
-                <td className="py-3.5 px-5 text-emerald-600 dark:text-emerald-400 font-bold whitespace-nowrap text-xs">
+                <td className="py-3.5 px-5 text-[#22C55E] font-bold whitespace-nowrap text-xs">
                   {r.extraHours}
                 </td>
                 <td className="py-3.5 px-5 whitespace-nowrap">
@@ -129,9 +129,9 @@ export const AdminAttendanceTable: React.FC<AdminAttendanceTableProps> = ({
                 <td className="py-3.5 px-5 text-right whitespace-nowrap">
                   <button
                     onClick={() => onOpenCorrection(r)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F4F7FB] hover:bg-[#EAF3FF] text-[#1A1D24] hover:text-[#0077FF] border border-[#E5ECF2] font-bold text-xs transition-colors cursor-pointer"
                   >
-                    <Edit3 className="w-3.5 h-3.5 text-slate-500" />
+                    <Edit3 className="w-3.5 h-3.5 text-[#8F9CAE]" />
                     <span>Correct</span>
                   </button>
                 </td>
