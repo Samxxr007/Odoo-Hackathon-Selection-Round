@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dayflow-bg text-dayflow-text font-sans antialiased selection:bg-dayflow-primary/20 selection:text-dayflow-primary;
+  }
+}
