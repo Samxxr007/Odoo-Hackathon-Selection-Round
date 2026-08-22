@@ -8,7 +8,7 @@ async function main() {
   // Create Users
   const emp1 = await prisma.user.upsert({
     where: { email: 'aswin@dayflow.hr' },
-    update: {},
+    update: { name: 'Aswin Acharya' },
     create: {
       id: 'emp-001',
       email: 'aswin@dayflow.hr',
@@ -24,7 +24,7 @@ async function main() {
 
   const emp2 = await prisma.user.upsert({
     where: { email: 'rahul@dayflow.hr' },
-    update: {},
+    update: { name: 'Rahul Sharma' },
     create: {
       id: 'emp-002',
       email: 'rahul@dayflow.hr',
@@ -40,7 +40,7 @@ async function main() {
 
   const emp3 = await prisma.user.upsert({
     where: { email: 'priya@dayflow.hr' },
-    update: {},
+    update: { name: 'Priya Patel' },
     create: {
       id: 'emp-003',
       email: 'priya@dayflow.hr',
@@ -56,11 +56,11 @@ async function main() {
 
   const admin = await prisma.user.upsert({
     where: { email: 'admin@dayflow.hr' },
-    update: {},
+    update: { name: 'Sarah Connor' },
     create: {
       id: 'admin-001',
       email: 'admin@dayflow.hr',
-      name: 'Sarah Connor (HR Admin)',
+      name: 'Sarah Connor',
       role: 'ADMIN',
       department: 'Human Resources',
       avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
