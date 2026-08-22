@@ -1,58 +1,43 @@
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────
-   Brand Design Tokens
+   Custom Animations & Design Tokens
    ───────────────────────────────────────────── */
 :root {
-  /* Primary Brand */
   --color-primary: #0077FF;
   --color-primary-hover: #0060CC;
-  --color-primary-alt: #0084FF;
   --color-sky: #00B7FE;
-
-  /* Accent */
   --color-warning: #F9911E;
-  --color-tint: #EAF3FF;
-
-  /* Neutrals */
-  --color-white: #FFFFFF;
-  --color-off-white: #F4F7FB;
-  --color-border: #E5ECF2;
-
-  /* Typography */
-  --color-text-primary: #1A1D24;
-  --color-text-muted: #8F9CAE;
-
-  /* Status */
   --color-present: #22C55E;
   --color-absent: #EAB308;
   --color-leave: #00B7FE;
-  --color-inactive: #8F9CAE;
 
   --background: #F4F7FB;
   --foreground: #1A1D24;
+  --card-bg: #FFFFFF;
+  --card-border: #E5ECF2;
+  --text-muted: #8F9CAE;
+}
+
+.dark {
+  --background: #0B0F17;
+  --foreground: #F1F5F9;
+  --card-bg: #131B2A;
+  --card-border: #1E293B;
+  --color-tint: #1E293B;
+  --text-muted: #94A3B8;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
-  /* Expose brand colors to Tailwind utilities */
-  --color-primary: #0077FF;
-  --color-primary-hover: #0060CC;
-  --color-primary-alt: #0084FF;
-  --color-sky: #00B7FE;
-  --color-warning: #F9911E;
-  --color-tint: #EAF3FF;
-  --color-off-white: #F4F7FB;
-  --color-border-gray: #E5ECF2;
-  --color-text-primary: #1A1D24;
-  --color-text-muted: #8F9CAE;
+  --color-dayflow-bg: var(--background);
+  --color-dayflow-surface: var(--card-bg);
+  --color-dayflow-border: var(--card-border);
+  --color-dayflow-text: var(--foreground);
+  --color-dayflow-muted: var(--text-muted);
 }
 
-/* ─────────────────────────────────────────────
-   Base
-   ───────────────────────────────────────────── */
 body {
   background: var(--background);
   color: var(--foreground);
@@ -68,41 +53,89 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-off-white);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 3px;
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+  background: #94A3B8;
 }
 
 /* ─────────────────────────────────────────────
-   Focus ring
+   Glassmorphic & Ambient Glow Utilities
    ───────────────────────────────────────────── */
-*:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(229, 236, 242, 0.8);
+}
+.dark .glass-card {
+  background: rgba(19, 27, 42, 0.8);
+  border: 1px solid rgba(30, 41, 59, 0.8);
+}
+
+.glass-header {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(229, 236, 242, 0.8);
+}
+.dark .glass-header {
+  background: rgba(11, 15, 23, 0.88);
+  border-bottom: 1px solid rgba(30, 41, 59, 0.8);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 20px -3px rgba(34, 197, 94, 0.35);
+}
+.glow-primary {
+  box-shadow: 0 0 20px -3px rgba(0, 119, 255, 0.35);
+}
+.glow-purple {
+  box-shadow: 0 0 20px -3px rgba(168, 85, 247, 0.35);
 }
 
 /* ─────────────────────────────────────────────
-   Animations
+   Keyframe Animations
    ───────────────────────────────────────────── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes floatOrb {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-12px) scale(1.05); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(1.08); }
+}
+
 .animate-fadeIn {
-  animation: fadeIn 0.2s ease-out forwards;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.4; }
+.animate-scaleIn {
+  animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-pulse-dot {
-  animation: pulse-dot 1.5s ease-in-out infinite;
+.animate-float {
+  animation: floatOrb 6s ease-in-out infinite;
+}
+
+.animate-pulseGlow {
+  animation: pulseGlow 2s ease-in-out infinite;
 }

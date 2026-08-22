@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useToast } from '@/components/ui/Toast'
@@ -63,39 +63,48 @@ export default function SigninPage() {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E5ECF2] shadow-sm p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#1A1D24]">Sign In</h1>
-        <p className="text-[#8F9CAE] text-sm mt-1">
-          Enter your Login ID or email to continue
+    <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xl p-8 sm:p-10 space-y-8 transition-colors duration-300">
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#0077FF] dark:text-[#38BDF8] bg-[#0077FF]/10 dark:bg-[#38BDF8]/15 px-2.5 py-0.5 rounded-full">
+            Secure Portal
+          </span>
+        </div>
+        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Sign In</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-1">
+          Enter your auto-generated <strong>Login ID</strong> or <strong>work email</strong>
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
         <Input
-          label="Login ID or Email"
-          placeholder="e.g. OIJODO20220001 or john@company.com"
+          label="Login ID or Work Email"
+          placeholder="e.g. OIADWR20200001 or admin@odoo.com"
           error={errors.loginId?.message}
-          leftIcon={<User className="h-4 w-4" />}
+          leftIcon={<User className="h-4 w-4 text-slate-400 dark:text-slate-500" />}
           autoComplete="username"
           {...register('loginId')}
         />
 
-        <div>
+        <div className="relative">
           <Input
             label="Password"
             type={showPassword ? 'text' : 'password'}
-            placeholder="Enter your password"
+            placeholder="••••••••"
             error={errors.password?.message}
-            leftIcon={<Lock className="h-4 w-4" />}
+            leftIcon={<Lock className="h-4 w-4 text-slate-400 dark:text-slate-500" />}
             rightIcon={
               <button
                 type="button"
-                onClick={() => setShowPassword((p) => !p)}
-                className="focus:outline-none hover:text-[#1A1D24] transition-colors"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             }
             autoComplete="current-password"
@@ -105,19 +114,40 @@ export default function SigninPage() {
 
         <Button
           type="submit"
-          className="w-full"
-          size="lg"
           isLoading={isSubmitting}
+          className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#0077FF] via-[#0088FF] to-[#00B7FE] hover:opacity-95 text-white font-bold text-sm shadow-lg glow-primary transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
         >
-          Sign In
+          <span>SIGN IN</span>
+          <ArrowRight className="w-4 h-4" />
         </Button>
       </form>
 
-      <div className="mt-6 text-center">
-        <p className="text-sm text-[#8F9CAE]">
-          Need to register your company?{' '}
-          <Link href="/signup" className="text-[#0077FF] font-medium hover:underline">
-            Sign up
+      {/* Demo Credentials Quick-Fill Pill */}
+      <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-xs space-y-1.5">
+        <p className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-[#0077FF] dark:text-[#38BDF8]" />
+          Demo Test Accounts:
+        </p>
+        <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-400">
+          <div>
+            <span className="font-semibold text-slate-900 dark:text-white">Admin:</span> admin@odoo.com<br />
+            <span className="font-mono text-slate-400">Admin@123456</span>
+          </div>
+          <div>
+            <span className="font-semibold text-slate-900 dark:text-white">Employee:</span> john.doe@odoo.com<br />
+            <span className="font-mono text-slate-400">Emp@123456</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="text-center pt-2 border-t border-slate-100 dark:border-slate-800">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Don&apos;t have an Account?{' '}
+          <Link
+            href="/signup"
+            className="text-[#0077FF] dark:text-[#38BDF8] font-bold hover:underline"
+          >
+            Sign Up
           </Link>
         </p>
       </div>

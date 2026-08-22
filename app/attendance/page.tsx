@@ -121,24 +121,24 @@ export default function EmployeeAttendancePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F4F7FB]">
+    <div className="min-h-screen flex flex-col bg-[#F4F7FB] dark:bg-[#0B0F17] transition-colors duration-300">
       <UnifiedHeader initialUser={user} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fadeIn">
         {/* Breadcrumb Navigation & Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#8F9CAE]">
-              <Link href="/dashboard" className="hover:text-[#0077FF] transition-colors">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-slate-500">
+              <Link href="/dashboard" className="hover:text-[#0077FF] dark:hover:text-[#38BDF8] transition-colors">
                 Employees
               </Link>
-              <ChevronRight className="w-3.5 h-3.5 text-[#8F9CAE]/60" />
-              <span className="text-[#1A1D24] font-bold">Attendance</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+              <span className="text-slate-900 dark:text-white font-bold">Attendance</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[#1A1D24] tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               My Attendance Portal
             </h1>
-            <p className="text-sm text-[#5A687D]">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Day-wise attendance, working time tracking, and monthly payable log.
             </p>
           </div>
@@ -149,7 +149,7 @@ export default function EmployeeAttendancePage() {
                 fetchTodayState();
                 fetchMonthlyData(currentMonth);
               }}
-              className="p-2.5 rounded-xl bg-white border border-[#E5ECF2] hover:bg-[#F4F7FB] text-[#8F9CAE] hover:text-[#1A1D24] shadow-2xs transition-colors cursor-pointer"
+              className="p-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white shadow-2xs transition-colors cursor-pointer"
               title="Refresh Data"
             >
               <RefreshCw className="w-4 h-4" />
@@ -163,11 +163,11 @@ export default function EmployeeAttendancePage() {
         </div>
 
         {/* Wireframe Note Banner on Attendance & Payroll Rule */}
-        <div className="bg-[#EAF3FF] border border-blue-200 rounded-2xl p-4 text-xs text-[#0077FF] flex items-start gap-3">
-          <Info className="w-5 h-5 shrink-0 mt-0.5 text-[#0077FF]" />
+        <div className="bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-3xl p-5 text-xs text-[#0077FF] dark:text-[#38BDF8] flex items-start gap-3 shadow-xs">
+          <Info className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <p className="font-bold text-sm text-[#1A1D24]">Attendance & Payroll Connection</p>
-            <p className="text-[#5A687D] leading-relaxed">
+            <p className="font-bold text-sm text-blue-950 dark:text-blue-100">Attendance & Payroll Connection</p>
+            <p className="text-blue-900/80 dark:text-blue-300 leading-relaxed">
               Your attendance data serves as the direct foundation for monthly payslip generation. The system automatically calculates payable days based on completed shifts. Unexcused absences or unpaid leaves reduce the total payable days count during payroll compilation.
             </p>
           </div>

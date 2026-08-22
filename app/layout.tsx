@@ -18,14 +18,19 @@ export const metadata: Metadata = {
   description: 'Production-quality HRMS platform for modern teams',
 }
 
+import { ThemeProvider } from '@/components/theme/ThemeProvider'
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full bg-[#F4F7FB] text-[#1A1D24]">
-        <ToastProvider>{children}</ToastProvider>
+      <body className="min-h-full bg-[#F4F7FB] dark:bg-[#0B0F17] text-[#1A1D24] dark:text-[#F1F5F9] transition-colors duration-300">
+        <ThemeProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
