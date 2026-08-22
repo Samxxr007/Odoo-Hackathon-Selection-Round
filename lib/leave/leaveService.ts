@@ -314,7 +314,7 @@ export async function getUserLeaveRequests(
       user: { select: { name: true, email: true } },
       decidedBy: { select: { name: true } },
     },
-    orderBy: { requestedAt: 'desc' },
+    orderBy: { createdAt: 'desc' },
   })
 
   return requests.map(mapToDTO)
@@ -333,7 +333,7 @@ export async function getAllLeaveRequests(
       user: { select: { name: true, email: true } },
       decidedBy: { select: { name: true } },
     },
-    orderBy: { requestedAt: 'desc' },
+    orderBy: { createdAt: 'desc' },
   })
 
   return requests.map(mapToDTO)

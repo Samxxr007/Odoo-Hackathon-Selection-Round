@@ -102,6 +102,10 @@ export async function toggleAttendance(
         );
       }
 
+      if (!existing.checkIn) {
+        throw new AttendanceError('Check-in timestamp is missing.', 'INVALID_TIMESTAMP', 400);
+      }
+
       if (timestamp.getTime() <= existing.checkIn.getTime()) {
         throw new AttendanceError(
           'Check-out timestamp must be later than check-in timestamp.',
@@ -399,11 +403,15 @@ export async function correctAttendanceCheckout(params: {
 
   const existing = await prisma.attendance.findUnique({
     where: { id: attendanceId },
-    include: { employee: true },
+    include: { user: true },
   });
 
   if (!existing) {
     throw new AttendanceError('Attendance record not found.', 'ATTENDANCE_NOT_FOUND', 404);
+  }
+
+  if (!existing.checkIn) {
+    throw new AttendanceError('Cannot correct attendance without a check-in time.', 'INVALID_TIMESTAMP', 400);
   }
 
   if (correctedCheckOut.getTime() <= existing.checkIn.getTime()) {
@@ -416,7 +424,7 @@ export async function correctAttendanceCheckout(params: {
 
   const durationMs = correctedCheckOut.getTime() - existing.checkIn.getTime();
   const workHoursMinutes = Math.round(durationMs / (1000 * 60));
-  const shiftDuration = existing.employee.shiftDurationMinutes || ATTENDANCE_CONFIG.STANDARD_SHIFT_MINUTES;
+  const shiftDuration = existing.user?.shiftDurationMinutes || ATTENDANCE_CONFIG.STANDARD_SHIFT_MINUTES;
   const extraHoursMinutes = Math.max(0, workHoursMinutes - shiftDuration);
 
   const status: AttendanceStatus =

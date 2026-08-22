@@ -88,9 +88,10 @@ export async function getApprovedLeaveSplit(
   let unpaidDays = 0
 
   for (const leave of approvedLeaves) {
-    // Clip the leave to within the month
-    const leaveStart = dayjs(Math.max(leave.fromDate.getTime(), startOfMonth.getTime()))
-    const leaveEnd = dayjs(Math.min(leave.toDate.getTime(), endOfMonth.getTime()))
+    const rawFrom = leave.fromDate || leave.startDate || new Date()
+    const rawTo = leave.toDate || leave.endDate || new Date()
+    const leaveStart = dayjs(Math.max(rawFrom.getTime(), startOfMonth.getTime()))
+    const leaveEnd = dayjs(Math.min(rawTo.getTime(), endOfMonth.getTime()))
 
     // Count working days within this clipped range
     const holidays = await prisma.publicHoliday.findMany({

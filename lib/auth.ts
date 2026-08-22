@@ -1,9 +1,10 @@
 import { NextRequest } from 'next/server';
-import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { User } from '@prisma/client';
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { UserSession, UserRole, EmployeeProfile } from '@/lib/types';
+import { getDbUserById, DbUserRecord } from '@/lib/db';
 
 // ─────────────────────────────────────────────
 // Shared Types
@@ -147,16 +148,20 @@ export function validatePasswordStrength(password: string): { isValid: boolean; 
   if (!/[0-9]/.test(password)) {
     return { isValid: false, message: 'Password must contain at least one number' };
   }
-  return { isValid: true };
-}
-  }
-  if (!/[0-9]/.test(password)) {
-    return { isValid: false, message: 'Password must contain at least one number' };
-  }
   if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
     return { isValid: false, message: 'Password must contain at least one special character' };
   }
   return { isValid: true };
+}
+
+export function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return `sha256_${Math.abs(hash).toString(16)}_${str.length}`;
 }
 
 export function hashPassword(password: string): string {

@@ -62,9 +62,9 @@ export async function getLeaveBalance(userId: string): Promise<LeaveBalanceSumma
     })
 
     const daysUsed = approvedLeaves.reduce((acc, leave) => {
-      const start = new Date(leave.startDate)
-      const end = new Date(leave.endDate)
-      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+      const start = leave.startDate ? new Date(leave.startDate) : (leave.fromDate ? new Date(leave.fromDate) : new Date())
+      const end = leave.endDate ? new Date(leave.endDate) : (leave.toDate ? new Date(leave.toDate) : new Date())
+      const days = leave.days || Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
       return acc + days
     }, 0)
 

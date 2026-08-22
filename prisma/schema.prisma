@@ -136,9 +136,11 @@ model YearlySerial {
 
 model Attendance {
   id                String              @id @default(cuid())
-  userId            String
-  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date              DateTime            @db.Date
+  userId            String?
+  employeeId        String?
+  user              User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date              DateTime?           @db.Date
+  businessDate      String?
   status            AttendanceStatusType @default(UNKNOWN)
   checkIn           DateTime?
   checkOut          DateTime?
@@ -154,10 +156,30 @@ model Attendance {
   updatedAt         DateTime            @updatedAt
 
   @@unique([userId, date])
+  @@unique([employeeId, businessDate], name: "unique_employee_daily_attendance")
+  @@index([employeeId, businessDate])
 }
 
 // ─────────────────────────────────────────────
-// LeaveAllocation
+// Leave (Member 3)
+// ─────────────────────────────────────────────
+
+model Leave {
+  id          String   @id @default(cuid())
+  employeeId  String?
+  startDate   String
+  endDate     String
+  type        String   @default("PAID")
+  status      String   @default("PENDING")
+  reason      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([employeeId])
+}
+
+// ─────────────────────────────────────────────
+// LeaveAllocation (Member 4)
 // ─────────────────────────────────────────────
 
 model LeaveAllocation {
@@ -176,7 +198,7 @@ model LeaveAllocation {
 }
 
 // ─────────────────────────────────────────────
-// LeaveRequest
+// LeaveRequest (Member 1 & 4)
 // ─────────────────────────────────────────────
 
 model LeaveRequest {

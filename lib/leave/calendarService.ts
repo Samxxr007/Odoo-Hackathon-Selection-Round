@@ -57,7 +57,7 @@ export async function getCalendarData(
       type: req.leaveType as any,
       status: req.status as LeaveStatus,
       userId: req.userId,
-      days: req.days,
+      days: req.days ?? undefined,
     })
   }
 

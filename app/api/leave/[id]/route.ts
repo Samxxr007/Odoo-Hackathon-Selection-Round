@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/authGuard'
 import { getLeaveRequestById, cancelLeave } from '@/lib/leave/leaveService'
 
-type Params = { params: { id: string } }
+type Params = { params: Promise<{ id: string }> }
 
 // GET /api/leave/[id]
 export async function GET(_req: NextRequest, { params }: Params) {
@@ -10,7 +10,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const user = await getAuthUser()
     if (user instanceof NextResponse) return user
 
-    const request = await getLeaveRequestById(params.id, user.id, user.role)
+    const resolved = await params
+    const request = await getLeaveRequestById(resolved.id, user.id, user.role)
     return NextResponse.json(request)
   } catch (err: any) {
     if (err.message === 'Forbidden') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -25,7 +26,8 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     const user = await getAuthUser()
     if (user instanceof NextResponse) return user
 
-    await cancelLeave(params.id, user.id)
+    const resolved = await params
+    await cancelLeave(resolved.id, user.id)
     return NextResponse.json({ success: true })
   } catch (err: any) {
     console.error('[DELETE /api/leave/[id]]', err)
