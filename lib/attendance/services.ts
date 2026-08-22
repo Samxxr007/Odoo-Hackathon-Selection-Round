@@ -122,10 +122,18 @@ export async function toggleAttendance(
       const shiftDuration = employee.shiftDurationMinutes || ATTENDANCE_CONFIG.STANDARD_SHIFT_MINUTES;
       const extraHoursMinutes = Math.max(0, workHoursMinutes - shiftDuration);
 
-      // Determine half-day vs present status based on threshold
-      const halfDayThreshold = ATTENDANCE_CONFIG.HALF_DAY_THRESHOLD_MINUTES;
-      const status: AttendanceStatus =
-        workHoursMinutes < halfDayThreshold ? 'HALF_DAY' : 'PRESENT';
+      // Determine status based on duration threshold:
+      // - Under 120 mins (2 hours): ABSENT (short/invalid shift)
+      // - 120 to 239 mins (2-4 hours): HALF_DAY
+      // - 240+ mins (4+ hours): PRESENT
+      let status: AttendanceStatus = 'PRESENT';
+      if (workHoursMinutes < 120) {
+        status = 'ABSENT';
+      } else if (workHoursMinutes < 240) {
+        status = 'HALF_DAY';
+      } else {
+        status = 'PRESENT';
+      }
 
       const updatedRecord = await tx.attendance.update({
         where: { id: existing.id },
@@ -180,14 +188,14 @@ export async function getTodayAttendance(
 }
 
 /**
- * Get employee monthly attendance history with daily status breakdown
+ * Monthly Attendance Log for Employee View
  */
 export async function getEmployeeMonthlyAttendance(
   employeeId: string,
   monthString: string // YYYY-MM
 ) {
-  const analytics = await getMonthlyAttendanceAnalytics(employeeId, monthString);
   const days = getDaysInMonthString(monthString);
+  const todayStr = getBusinessDateString();
 
   const holidays = await prisma.holiday.findMany({
     where: { date: { startsWith: monthString } },
@@ -240,8 +248,9 @@ export async function getEmployeeMonthlyAttendance(
     const activeLegacyLeave = legacyLeaves.find((l) => l.startDate <= dateStr && l.endDate >= dateStr);
     const activeLeave = activeLeaveRequest || activeLegacyLeave;
     const att = attendanceMap.get(dateStr);
+    const isFutureDay = dateStr > todayStr;
 
-    let statusDisplay: 'PRESENT' | 'ABSENT' | 'HALF_DAY' | 'LEAVE' | 'HOLIDAY' | 'WEEKEND' = 'ABSENT';
+    let statusDisplay: 'PRESENT' | 'ABSENT' | 'HALF_DAY' | 'LEAVE' | 'HOLIDAY' | 'WEEKEND' | 'UPCOMING' = 'ABSENT';
     let checkInStr = '—';
     let checkOutStr = '—';
     let workHoursStr = '—';
@@ -263,9 +272,13 @@ export async function getEmployeeMonthlyAttendance(
       if (att.checkIn && !att.checkOut) {
         isMissingCheckout = true;
       }
+    } else if (isFutureDay) {
+      statusDisplay = 'UPCOMING';
     } else {
       statusDisplay = 'ABSENT';
     }
+
+    const isLate = isWeekend || holiday?.isNonWorkingDay || !att ? false : Boolean(att?.isLate);
 
     return {
       date: dateStr,
@@ -274,24 +287,20 @@ export async function getEmployeeMonthlyAttendance(
       checkOut: checkOutStr,
       workHours: workHoursStr,
       extraHours: extraHoursStr,
-      rawWorkMinutes: att?.workHoursMinutes ?? 0,
-      rawExtraMinutes: att?.extraHoursMinutes ?? 0,
+      isLate,
       isMissingCheckout,
-      isLate: att?.isLate ?? false,
-      isCorrected: att?.isCorrected ?? false,
-      attendanceId: att?.id ?? null,
     };
   });
 
   return {
     month: monthString,
-    summary: analytics.summary,
+    totalDays: days.length,
     records,
   };
 }
 
 /**
- * Admin Daily Attendance API
+ * Admin Daily Attendance Overview
  */
 export async function getAdminDailyAttendance(params: {
   date: string; // YYYY-MM-DD
@@ -299,6 +308,8 @@ export async function getAdminDailyAttendance(params: {
   status?: string;
 }) {
   const { date, search, status } = params;
+  const todayStr = getBusinessDateString();
+  const isFutureDay = date > todayStr;
 
   // Build employee filter — include ALL employees and staff
   const whereUser: any = {};
@@ -355,7 +366,7 @@ export async function getAdminDailyAttendance(params: {
     const att = attendanceMap.get(emp.id);
     const activeLeave = leaveRequestMap.get(emp.id) || legacyLeaveMap.get(emp.id);
 
-    let statusDisplay: 'PRESENT' | 'ABSENT' | 'HALF_DAY' | 'LEAVE' | 'HOLIDAY' | 'WEEKEND' = 'ABSENT';
+    let statusDisplay: 'PRESENT' | 'ABSENT' | 'HALF_DAY' | 'LEAVE' | 'HOLIDAY' | 'WEEKEND' | 'UPCOMING' = 'ABSENT';
     let checkInStr = '—';
     let checkOutStr = '—';
     let workHoursStr = '—';
@@ -377,7 +388,13 @@ export async function getAdminDailyAttendance(params: {
       if (att.checkIn && !att.checkOut) {
         isMissingCheckout = true;
       }
+    } else if (isFutureDay) {
+      statusDisplay = 'UPCOMING';
+    } else {
+      statusDisplay = 'ABSENT';
     }
+
+    const isLate = isWeekend || holiday?.isNonWorkingDay || !att ? false : Boolean(att?.isLate);
 
     return {
       employeeId: emp.id,

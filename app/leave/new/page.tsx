@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { Button, Typography, Breadcrumb, Spin } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
@@ -13,39 +12,45 @@ const { Title, Text } = Typography
 
 export default function NewLeavePage() {
   const router = useRouter()
-  const sessionResult = useSession()
-  const session = sessionResult?.data
-  const status = sessionResult?.status || 'unauthenticated'
+  const [currentUser, setCurrentUser] = useState<{ name: string; email: string }>({
+    name: 'Current User',
+    email: 'user@company.com',
+  })
   const [balances, setBalances] = useState<LeaveBalanceDTO[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchBalances = async () => {
-      try {
-        const res = await fetch(`/api/leave/balance?year=${new Date().getFullYear()}`)
-        if (res.ok) {
-          setBalances(await res.json())
+    // 1. Fetch authenticated session details
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.user) {
+          setCurrentUser({
+            name: json.user.name || 'Current User',
+            email: json.user.email || 'user@company.com',
+          })
         }
-      } catch (e) {
-        console.error('Failed to fetch balances', e)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchBalances()
+      })
+      .catch((e) => console.error('Error fetching session user:', e))
+
+    // 2. Fetch leave allocation balances
+    fetch(`/api/leave/balance?year=${new Date().getFullYear()}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setBalances(data)
+        }
+      })
+      .catch((e) => console.error('Failed to fetch balances:', e))
+      .finally(() => setLoading(false))
   }, [])
 
-  if (status === 'loading' || loading) {
+  if (loading) {
     return (
       <div className="py-20 text-center">
         <Spin size="large" />
       </div>
     )
-  }
-
-  const currentUser = {
-    name: session?.user?.name || 'Current User',
-    email: session?.user?.email || 'user@example.com',
   }
 
   return (

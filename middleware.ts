@@ -33,9 +33,22 @@ export async function middleware(req: NextRequest) {
 
   const session = await getSessionFromRequest(req)
 
-  // If user is authenticated and tries to access auth pages → redirect to dashboard
+  // If user is authenticated and tries to access auth pages → redirect based on role
   if (session && AUTH_ONLY_ROUTES.some((r) => pathname === r || pathname.startsWith(r + '/'))) {
-    return NextResponse.redirect(new URL('/dashboard', req.url))
+    const defaultHome = session.role === 'EMPLOYEE' ? '/employee-dashboard' : '/dashboard'
+    return NextResponse.redirect(new URL(defaultHome, req.url))
+  }
+
+  // Role-based protection: Employees trying to access Admin routes → redirect to /employee-dashboard
+  if (
+    session &&
+    session.role === 'EMPLOYEE' &&
+    (pathname.startsWith('/dashboard') ||
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/leave/admin') ||
+      pathname.startsWith('/payroll/admin'))
+  ) {
+    return NextResponse.redirect(new URL('/employee-dashboard', req.url))
   }
 
   // If route requires auth and no session → redirect to signin
