@@ -1,20 +1,40 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Typography, message, Tag } from 'antd'
-import { CheckSquareOutlined } from '@ant-design/icons'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Typography, message, Tag, Button } from 'antd'
+import { CheckSquareOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import AdminLeaveTable from '@/components/leave/AdminLeaveTable'
 import type { LeaveRequestDTO } from '@/types/leave'
 
 const { Title, Text } = Typography
 
 export default function AdminLeaveApprovalPage() {
+  const router = useRouter()
   const [requests, setRequests] = useState<LeaveRequestDTO[]>([])
   const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
 
-  const fetchRequests = async () => {
+  const checkRoleAndFetch = async () => {
     try {
       setLoading(true)
+      const meRes = await fetch('/api/auth/me')
+      const meJson = await meRes.json()
+
+      if (!meJson.success || !meJson.data) {
+        router.push('/signin')
+        return
+      }
+
+      if (meJson.data.role !== 'ADMIN' && meJson.data.role !== 'HR') {
+        message.warning('Access restricted to Admin & HR. Redirecting to employee view.')
+        router.replace('/leave')
+        return
+      }
+
+      setIsAdmin(true)
+
       const res = await fetch('/api/leave/admin')
       if (res.ok) {
         setRequests(await res.json())
@@ -30,7 +50,7 @@ export default function AdminLeaveApprovalPage() {
   }
 
   useEffect(() => {
-    fetchRequests()
+    checkRoleAndFetch()
   }, [])
 
   const handleApprove = async (id: string) => {
@@ -43,7 +63,7 @@ export default function AdminLeaveApprovalPage() {
         throw new Error(err.error || 'Failed to approve request')
       }
       message.success('Leave request approved successfully!')
-      fetchRequests()
+      checkRoleAndFetch()
     } catch (e: any) {
       message.error(e.message)
     }
@@ -61,7 +81,7 @@ export default function AdminLeaveApprovalPage() {
         throw new Error(err.error || 'Failed to reject request')
       }
       message.success('Leave request rejected with comment.')
-      fetchRequests()
+      checkRoleAndFetch()
     } catch (e: any) {
       message.error(e.message)
     }
@@ -87,6 +107,12 @@ export default function AdminLeaveApprovalPage() {
             Review, approve, or refuse organization-wide employee time off requests.
           </Text>
         </div>
+
+        <Link href="/leave">
+          <Button icon={<ArrowLeftOutlined />}>
+            Switch to Employee View
+          </Button>
+        </Link>
       </div>
 
       <AdminLeaveTable

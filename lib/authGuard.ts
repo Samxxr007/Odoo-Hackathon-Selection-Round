@@ -1,6 +1,7 @@
 import { cookies, headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { getSession } from '@/lib/auth/session'
 
 export type UserRole = 'ADMIN' | 'HR' | 'EMPLOYEE'
 
@@ -12,54 +13,52 @@ export interface SessionUser {
 }
 
 /**
- * Returns the current session user or a 401 NextResponse.
- * Supports cookie 'dayflow_user_id' or header 'x-user-id' / 'x-dev-user-id'.
+ * Returns the current authenticated user from session or 401 NextResponse.
  */
 export async function getAuthUser(): Promise<SessionUser | NextResponse> {
   try {
     const reqHeaders = await headers()
     const reqCookies = await cookies()
 
+    // 1. Check primary JWT session cookie
+    const sessionData = await getSession()
+    if (sessionData && sessionData.session) {
+      const user = await prisma.user.findUnique({
+        where: { id: sessionData.session.userId },
+      })
+      if (user && user.isActive) {
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: (user.role || 'EMPLOYEE') as UserRole,
+        }
+      }
+    }
+
+    // 2. Check explicit header / test cookie fallback
     const userId =
       reqHeaders.get('x-user-id') ||
       reqHeaders.get('x-dev-user-id') ||
       reqCookies.get('dayflow_user_id')?.value
 
-    let user = null
     if (userId) {
-      user = await prisma.user.findUnique({
+      const user = await prisma.user.findUnique({
         where: { id: userId },
       })
-    }
-
-    if (!user) {
-      user = await prisma.user.findFirst({
-        orderBy: { createdAt: 'asc' },
-      })
-    }
-
-    if (!user) {
-      return {
-        id: 'default-emp-id',
-        name: 'Demo Employee',
-        email: 'employee@odoo-hackathon.com',
-        role: 'EMPLOYEE',
+      if (user && user.isActive) {
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: (user.role || 'EMPLOYEE') as UserRole,
+        }
       }
     }
 
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: (user.role || 'EMPLOYEE') as UserRole,
-    }
+    return NextResponse.json({ error: 'Unauthorized: Please sign in' }, { status: 401 })
   } catch (e) {
-    return {
-      id: 'fallback-user',
-      name: 'Employee User',
-      email: 'user@example.com',
-      role: 'EMPLOYEE',
-    }
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
 
@@ -74,7 +73,7 @@ export async function requireRoles(
   if (user instanceof NextResponse) return user
 
   if (!allowedRoles.includes(user.role)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 })
   }
   return user
 }

@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Navbar } from '@/components/attendance/Navbar';
+import { UnifiedHeader } from '@/components/layout/UnifiedHeader';
 import { MonthNavigator } from '@/components/attendance/MonthNavigator';
 import { TodayAttendanceCard } from '@/components/attendance/TodayAttendanceCard';
 import { AttendanceSummaryCards } from '@/components/attendance/AttendanceSummaryCards';
 import { AttendanceTable } from '@/components/attendance/AttendanceTable';
-import { RefreshCw, AlertCircle, ChevronRight } from 'lucide-react';
+import { RefreshCw, AlertCircle, ChevronRight, Info } from 'lucide-react';
 
 export default function EmployeeAttendancePage() {
   const [currentMonth, setCurrentMonth] = useState<string>('2026-08');
-  const [user, setUser] = useState<any>({ name: '' });
+  const [user, setUser] = useState<any>(null);
   
   // Today's attendance state
   const [todayState, setTodayState] = useState<{
@@ -44,7 +44,7 @@ export default function EmployeeAttendancePage() {
       .then((res) => res.json())
       .then((json) => {
         if (json.success && json.user) {
-          setUser({ name: json.user.name });
+          setUser(json.user);
         }
       })
       .catch((e) => console.error('Failed to fetch session user:', e));
@@ -111,7 +111,6 @@ export default function EmployeeAttendancePage() {
         throw new Error(json.error?.message || 'Failed to record attendance.');
       }
 
-      // Re-fetch state & monthly history
       await fetchTodayState();
       await fetchMonthlyData(currentMonth);
     } catch (e: any) {
@@ -122,22 +121,26 @@ export default function EmployeeAttendancePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-dayflow-bg">
-      <Navbar currentUserName={user.name} />
+    <div className="min-h-screen flex flex-col bg-[#F4F7FB]">
+      <UnifiedHeader initialUser={user} />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fadeIn">
         {/* Breadcrumb Navigation & Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-dayflow-muted">
-              <Link href="/employee-dashboard" className="hover:text-dayflow-primary transition-colors">
-                Employee Dashboard
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#8F9CAE]">
+              <Link href="/dashboard" className="hover:text-[#0077FF] transition-colors">
+                Employees
               </Link>
-              <ChevronRight className="w-3.5 h-3.5 text-dayflow-muted/60" />
-              <span className="text-dayflow-text font-bold">Attendance</span>
+              <ChevronRight className="w-3.5 h-3.5 text-[#8F9CAE]/60" />
+              <span className="text-[#1A1D24] font-bold">Attendance</span>
             </div>
-            <h1 className="text-2xl font-black text-dayflow-text tracking-tight">My Attendance Dashboard</h1>
-            <p className="text-sm text-dayflow-muted">Track your daily shift duration, extra hours, and monthly logs</p>
+            <h1 className="text-2xl sm:text-3xl font-black text-[#1A1D24] tracking-tight">
+              My Attendance Portal
+            </h1>
+            <p className="text-sm text-[#5A687D]">
+              Day-wise attendance, working time tracking, and monthly payable log.
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -146,7 +149,7 @@ export default function EmployeeAttendancePage() {
                 fetchTodayState();
                 fetchMonthlyData(currentMonth);
               }}
-              className="p-2.5 rounded-xl bg-white border border-dayflow-border hover:bg-dayflow-light text-dayflow-muted hover:text-dayflow-text shadow-2xs transition-colors"
+              className="p-2.5 rounded-xl bg-white border border-[#E5ECF2] hover:bg-[#F4F7FB] text-[#8F9CAE] hover:text-[#1A1D24] shadow-2xs transition-colors cursor-pointer"
               title="Refresh Data"
             >
               <RefreshCw className="w-4 h-4" />
@@ -159,6 +162,17 @@ export default function EmployeeAttendancePage() {
           </div>
         </div>
 
+        {/* Wireframe Note Banner on Attendance & Payroll Rule */}
+        <div className="bg-[#EAF3FF] border border-blue-200 rounded-2xl p-4 text-xs text-[#0077FF] flex items-start gap-3">
+          <Info className="w-5 h-5 shrink-0 mt-0.5 text-[#0077FF]" />
+          <div className="space-y-1">
+            <p className="font-bold text-sm text-[#1A1D24]">Attendance & Payroll Connection</p>
+            <p className="text-[#5A687D] leading-relaxed">
+              Your attendance data serves as the direct foundation for monthly payslip generation. The system automatically calculates payable days based on completed shifts. Unexcused absences or unpaid leaves reduce the total payable days count during payroll compilation.
+            </p>
+          </div>
+        </div>
+
         {/* Global Error Alert if any */}
         {error && (
           <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-medium flex items-center justify-between">
@@ -168,7 +182,7 @@ export default function EmployeeAttendancePage() {
             </div>
             <button
               onClick={() => fetchMonthlyData(currentMonth)}
-              className="text-xs font-bold underline hover:text-rose-900"
+              className="text-xs font-bold underline hover:text-rose-900 cursor-pointer"
             >
               Retry
             </button>

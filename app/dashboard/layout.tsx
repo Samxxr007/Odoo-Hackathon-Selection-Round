@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { requireAuth } from '@/lib/auth/session'
-import { Sidebar } from '@/components/dashboard/Sidebar'
-import { TopNav } from '@/components/dashboard/TopNav'
+import { UnifiedHeader } from '@/components/layout/UnifiedHeader'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   let user
@@ -17,12 +16,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F4F7FB]">
-      <Sidebar user={user} />
-      <div className="flex-1 flex flex-col min-w-0">
-        <TopNav user={user} />
-        <main className="flex-1 p-4 lg:p-6 animate-fadeIn">{children}</main>
-      </div>
+    <div className="min-h-screen bg-[#F4F7FB] flex flex-col">
+      <UnifiedHeader initialUser={user} />
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 animate-fadeIn">
+        {children}
+      </main>
     </div>
   )
 }

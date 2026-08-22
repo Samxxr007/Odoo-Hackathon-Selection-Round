@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { Button, Typography, Breadcrumb, Spin } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
@@ -13,39 +12,48 @@ const { Title, Text } = Typography
 
 export default function NewLeavePage() {
   const router = useRouter()
-  const sessionResult = useSession()
-  const session = sessionResult?.data
-  const status = sessionResult?.status || 'unauthenticated'
+  const [currentUser, setCurrentUser] = useState<{ name: string; email: string }>({
+    name: 'Alexander Wright',
+    email: 'admin@odoo.com',
+  })
   const [balances, setBalances] = useState<LeaveBalanceDTO[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchBalances = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`/api/leave/balance?year=${new Date().getFullYear()}`)
-        if (res.ok) {
-          setBalances(await res.json())
+        setLoading(true)
+        const [meRes, balRes] = await Promise.all([
+          fetch('/api/auth/me'),
+          fetch(`/api/leave/balance?year=${new Date().getFullYear()}`),
+        ])
+
+        const meJson = await meRes.json()
+        if (meJson.success && meJson.data) {
+          setCurrentUser({
+            name: meJson.data.name,
+            email: meJson.data.email,
+          })
+        }
+
+        if (balRes.ok) {
+          setBalances(await balRes.json())
         }
       } catch (e) {
-        console.error('Failed to fetch balances', e)
+        console.error('Failed to fetch data for leave request', e)
       } finally {
         setLoading(false)
       }
     }
-    fetchBalances()
+    fetchData()
   }, [])
 
-  if (status === 'loading' || loading) {
+  if (loading) {
     return (
       <div className="py-20 text-center">
         <Spin size="large" />
       </div>
     )
-  }
-
-  const currentUser = {
-    name: session?.user?.name || 'Current User',
-    email: session?.user?.email || 'user@example.com',
   }
 
   return (
@@ -67,7 +75,7 @@ export default function NewLeavePage() {
             Submit New Time Off Request
           </Title>
           <Text type="secondary">
-            Fill in the details below to request days off.
+            Fill in the details below to request days off. Duration is auto-computed excluding weekends and holidays.
           </Text>
         </div>
       </div>
