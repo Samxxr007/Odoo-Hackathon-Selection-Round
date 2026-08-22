@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Navbar } from '@/components/attendance/Navbar';
+import Navbar from '@/components/layout/Navbar';
 import {
   Clock,
   ArrowRight,
@@ -12,11 +12,14 @@ import {
   User,
   DollarSign,
   RefreshCw,
+  Bell,
+  Activity,
 } from 'lucide-react';
 import { formatTimeInTimezone, formatDurationMinutes } from '@/lib/attendance/timezone';
 
 export default function EmployeeDashboardPage() {
   const [userName, setUserName] = useState<string>('');
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [todayState, setTodayState] = useState<{
     isCheckedIn: boolean;
     isCheckedOut: boolean;
@@ -41,6 +44,16 @@ export default function EmployeeDashboardPage() {
         }
       })
       .catch((e) => console.error('Failed to fetch session user:', e));
+
+    // Fetch recent notifications
+    fetch('/api/notifications?limit=5')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          setNotifications(json.data);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Fetch today's real attendance state
@@ -84,44 +97,151 @@ export default function EmployeeDashboardPage() {
   const displayName = userName ? userName.replace(/\s*\([^)]*\)/g, '').trim() : '';
 
   return (
-    <div className="min-h-screen flex flex-col bg-dayflow-bg">
-      <Navbar currentUserName={displayName} />
+    <div className="min-h-screen flex flex-col bg-[#F4F7FB]">
+      <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
         {/* Welcome Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 sm:p-8 rounded-3xl border border-dayflow-border shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 sm:p-8 rounded-3xl border border-[#E5ECF2] shadow-xs">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-dayflow-sky">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#00B7FE]">
               <CalendarIcon className="w-3.5 h-3.5" />
               <span>{todayDateString}</span>
             </div>
-            <h1 className="text-3xl font-black text-dayflow-text tracking-tight">
+            <h1 className="text-3xl font-black text-[#1A1D24] tracking-tight">
               {timeOfDayGreeting}, {displayName || 'Employee'}
             </h1>
-            <p className="text-sm text-dayflow-muted">
-              Here is your daily HRMS overview and work attendance status.
+            <p className="text-sm text-[#8F9CAE]">
+              Here is your daily HRMS overview and work status.
             </p>
           </div>
 
           <button
             onClick={fetchTodayState}
-            className="self-start sm:self-auto p-2.5 rounded-xl bg-dayflow-bg border border-dayflow-border hover:bg-dayflow-light text-dayflow-muted hover:text-dayflow-text shadow-2xs transition-colors"
+            className="self-start sm:self-auto p-2.5 rounded-xl bg-[#F4F7FB] border border-[#E5ECF2] hover:bg-[#EAF3FF] text-[#8F9CAE] hover:text-[#1A1D24] shadow-2xs transition-colors"
             title="Refresh Overview"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
 
+        {/* Quick Access Modules Navigation */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-[#1A1D24] tracking-tight">Quick Access Modules</h2>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Profile Card */}
+            <Link
+              href="/profile"
+              className="bg-white p-6 rounded-2xl border border-[#E5ECF2] shadow-xs hover:shadow-md hover:border-[#0077FF]/30 transition-all flex flex-col justify-between space-y-4 group"
+            >
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <User className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#1A1D24] group-hover:text-[#0077FF] transition-colors">
+                    My Profile
+                  </h3>
+                  <p className="text-xs text-[#8F9CAE] mt-1 leading-relaxed">
+                    View personal info, job details, avatar, and security settings.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 text-xs font-bold text-[#0077FF] pt-2 border-t border-[#E5ECF2]/50">
+                <span>View Profile</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* Attendance Card */}
+            <Link
+              href="/attendance"
+              className="bg-white p-6 rounded-2xl border border-[#E5ECF2] shadow-xs hover:shadow-md hover:border-[#0077FF]/30 transition-all flex flex-col justify-between space-y-4 group"
+            >
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0077FF] flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#1A1D24] group-hover:text-[#0077FF] transition-colors">
+                    My Attendance
+                  </h3>
+                  <p className="text-xs text-[#8F9CAE] mt-1 leading-relaxed">
+                    Check-in/out, live shift timer, monthly attendance logs & overtime.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 text-xs font-bold text-[#0077FF] pt-2 border-t border-[#E5ECF2]/50">
+                <span>View Attendance</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* Leave Requests Card */}
+            <Link
+              href="/leave"
+              className="bg-white p-6 rounded-2xl border border-[#E5ECF2] shadow-xs hover:shadow-md hover:border-[#0077FF]/30 transition-all flex flex-col justify-between space-y-4 group"
+            >
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Umbrella className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#1A1D24] group-hover:text-[#0077FF] transition-colors">
+                    Leave Requests
+                  </h3>
+                  <p className="text-xs text-[#8F9CAE] mt-1 leading-relaxed">
+                    Apply for paid/unpaid/sick leaves and track approval requests.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 text-xs font-bold text-[#0077FF] pt-2 border-t border-[#E5ECF2]/50">
+                <span>View Leave</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* Payroll Card */}
+            <Link
+              href="/payroll"
+              className="bg-white p-6 rounded-2xl border border-[#E5ECF2] shadow-xs hover:shadow-md hover:border-[#0077FF]/30 transition-all flex flex-col justify-between space-y-4 group"
+            >
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <DollarSign className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#1A1D24] group-hover:text-[#0077FF] transition-colors">
+                    Payroll & Salary
+                  </h3>
+                  <p className="text-xs text-[#8F9CAE] mt-1 leading-relaxed">
+                    View monthly salary breakdown, payable days, and download payslips.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 text-xs font-bold text-[#0077FF] pt-2 border-t border-[#E5ECF2]/50">
+                <span>View Payroll</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+          </div>
+        </div>
+
         {/* Primary Today's Attendance Summary Banner Card */}
-        <div className="bg-white rounded-3xl border border-dayflow-border p-6 sm:p-8 shadow-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-dayflow-border pb-4">
+        <div className="bg-white rounded-3xl border border-[#E5ECF2] p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="flex items-center justify-between border-b border-[#E5ECF2] pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-dayflow-light text-dayflow-primary flex items-center justify-center border border-blue-100">
+              <div className="w-10 h-10 rounded-2xl bg-[#EAF3FF] text-[#0077FF] flex items-center justify-center border border-blue-100">
                 <Clock className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-dayflow-text">Today's Attendance Overview</h2>
-                <p className="text-xs text-dayflow-muted">Real-time status from your attendance log</p>
+                <h2 className="text-xl font-bold text-[#1A1D24]">Today's Attendance Summary</h2>
+                <p className="text-xs text-[#8F9CAE]">Real-time status from your attendance log</p>
               </div>
             </div>
 
@@ -134,23 +254,23 @@ export default function EmployeeDashboardPage() {
 
           {/* Dynamic State Display */}
           {isLoading ? (
-            <div className="py-8 text-center text-sm font-semibold text-dayflow-muted animate-pulse">
+            <div className="py-8 text-center text-sm font-semibold text-[#8F9CAE] animate-pulse">
               Loading today's attendance status...
             </div>
           ) : !todayState.isCheckedIn ? (
             /* STATE A: NOT CHECKED IN */
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 rounded-2xl bg-gradient-to-r from-dayflow-light to-white border border-blue-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 rounded-2xl bg-gradient-to-r from-[#EAF3FF] to-white border border-blue-100">
               <div className="space-y-1">
-                <span className="text-xs font-bold uppercase tracking-wider text-dayflow-muted">Current Shift Status</span>
-                <div className="text-xl font-bold text-dayflow-text">Not checked in today</div>
-                <p className="text-xs text-dayflow-muted">Start your shift by recording your attendance check-in.</p>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#8F9CAE]">Current Shift Status</span>
+                <div className="text-xl font-bold text-[#1A1D24]">Not checked in today</div>
+                <p className="text-xs text-[#8F9CAE]">Start your shift by recording your attendance check-in.</p>
               </div>
 
               <Link
                 href="/attendance"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-dayflow-primary hover:bg-dayflow-secondary text-white font-bold text-sm shadow-sm transition-all"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0077FF] hover:bg-[#0084FF] text-white font-bold text-sm shadow-sm transition-all"
               >
-                <span>Mark Attendance</span>
+                <span>View Attendance & Check In</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -164,15 +284,15 @@ export default function EmployeeDashboardPage() {
                 </div>
                 <div className="flex items-baseline gap-4">
                   <div>
-                    <span className="text-xs text-dayflow-muted">Checked In At:</span>
-                    <div className="text-2xl font-black text-dayflow-text">{checkInFormatted}</div>
+                    <span className="text-xs text-[#8F9CAE]">Checked In At:</span>
+                    <div className="text-2xl font-black text-[#1A1D24]">{checkInFormatted}</div>
                   </div>
                 </div>
               </div>
 
               <Link
                 href="/attendance"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-dayflow-primary hover:bg-dayflow-secondary text-white font-bold text-sm shadow-sm transition-all"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0077FF] hover:bg-[#0084FF] text-white font-bold text-sm shadow-sm transition-all"
               >
                 <span>View Attendance & Check Out</span>
                 <ArrowRight className="w-4 h-4" />
@@ -188,23 +308,23 @@ export default function EmployeeDashboardPage() {
                 </div>
                 <div className="flex items-center gap-6">
                   <div>
-                    <span className="text-xs text-dayflow-muted">Check In:</span>
-                    <div className="text-base font-bold text-dayflow-text">{checkInFormatted}</div>
+                    <span className="text-xs text-[#8F9CAE]">Check In:</span>
+                    <div className="text-base font-bold text-[#1A1D24]">{checkInFormatted}</div>
                   </div>
                   <div>
-                    <span className="text-xs text-dayflow-muted">Check Out:</span>
-                    <div className="text-base font-bold text-dayflow-text">{checkOutFormatted}</div>
+                    <span className="text-xs text-[#8F9CAE]">Check Out:</span>
+                    <div className="text-base font-bold text-[#1A1D24]">{checkOutFormatted}</div>
                   </div>
                   <div>
-                    <span className="text-xs text-dayflow-muted">Work Hours:</span>
-                    <div className="text-base font-bold text-dayflow-primary">{workHoursFormatted}</div>
+                    <span className="text-xs text-[#8F9CAE]">Work Hours:</span>
+                    <div className="text-base font-bold text-[#0077FF]">{workHoursFormatted}</div>
                   </div>
                 </div>
               </div>
 
               <Link
                 href="/attendance"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-dayflow-primary hover:bg-dayflow-secondary text-white font-bold text-sm shadow-sm transition-all"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0077FF] hover:bg-[#0084FF] text-white font-bold text-sm shadow-sm transition-all"
               >
                 <span>View Attendance Logs</span>
                 <ArrowRight className="w-4 h-4" />
@@ -213,108 +333,46 @@ export default function EmployeeDashboardPage() {
           )}
         </div>
 
-        {/* Quick Access Modules Navigation */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-dayflow-text tracking-tight">Quick Access Modules</h2>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Attendance Module Card (Active) */}
-            <Link
-              href="/attendance"
-              className="bg-white p-6 rounded-2xl border border-dayflow-border shadow-xs hover:shadow-md hover:border-dayflow-primary/30 transition-all flex flex-col justify-between space-y-4 group"
-            >
-              <div className="space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 text-dayflow-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Clock className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-dayflow-text group-hover:text-dayflow-primary transition-colors">
-                    My Attendance
-                  </h3>
-                  <p className="text-xs text-dayflow-muted mt-1 leading-relaxed">
-                    Check-in/out, live shift timer, monthly attendance history & overtime.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1 text-xs font-bold text-dayflow-primary pt-2 border-t border-dayflow-border/50">
-                <span>View Attendance</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            {/* Leave & Time Off Card */}
-            <div className="bg-white p-6 rounded-2xl border border-dayflow-border shadow-xs opacity-75 flex flex-col justify-between space-y-4">
-              <div className="space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-                  <Umbrella className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-bold text-dayflow-text">Leave & Time Off</h3>
-                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">
-                      Module
-                    </span>
-                  </div>
-                  <p className="text-xs text-dayflow-muted mt-1 leading-relaxed">
-                    Apply for paid/unpaid leaves and track balance requests.
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-xs font-semibold text-dayflow-muted pt-2 border-t border-dayflow-border/50">
-                Member 4 Integration Point
-              </div>
-            </div>
-
-            {/* Employee Profile Card */}
-            <div className="bg-white p-6 rounded-2xl border border-dayflow-border shadow-xs opacity-75 flex flex-col justify-between space-y-4">
-              <div className="space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
-                  <User className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-bold text-dayflow-text">My Profile</h3>
-                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">
-                      Module
-                    </span>
-                  </div>
-                  <p className="text-xs text-dayflow-muted mt-1 leading-relaxed">
-                    View personal information, contact details, skills, and avatar.
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-xs font-semibold text-dayflow-muted pt-2 border-t border-dayflow-border/50">
-                Member 2 Integration Point
-              </div>
-            </div>
-
-            {/* Payslips & Salary Card */}
-            <div className="bg-white p-6 rounded-2xl border border-dayflow-border shadow-xs opacity-75 flex flex-col justify-between space-y-4">
-              <div className="space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <DollarSign className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-bold text-dayflow-text">Payslips & Payroll</h3>
-                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">
-                      Module
-                    </span>
-                  </div>
-                  <p className="text-xs text-dayflow-muted mt-1 leading-relaxed">
-                    View monthly salary breakdown, payable days, and download payslips.
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-xs font-semibold text-dayflow-muted pt-2 border-t border-dayflow-border/50">
-                Member 4 Integration Point
-              </div>
-            </div>
+        {/* Recent Activity / Alerts Section */}
+        <div className="bg-white rounded-3xl border border-[#E5ECF2] p-6 sm:p-8 shadow-sm space-y-4">
+          <div className="flex items-center gap-2.5 pb-2 border-b border-[#E5ECF2]">
+            <Activity className="w-5 h-5 text-[#0077FF]" />
+            <h2 className="text-lg font-bold text-[#1A1D24]">Recent Activity & Alerts</h2>
           </div>
+
+          {notifications.length > 0 ? (
+            <div className="divide-y divide-[#E5ECF2]">
+              {notifications.map((item: any) => (
+                <div key={item.id} className="py-3 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#EAF3FF] text-[#0077FF] flex items-center justify-center shrink-0 mt-0.5">
+                    <Bell className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#1A1D24]">{item.message}</p>
+                    <span className="text-xs text-[#8F9CAE]">
+                      {new Date(item.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : todayState.record?.checkIn ? (
+            <div className="py-3 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1D24]">
+                  Checked in today at {checkInFormatted}
+                </p>
+                <span className="text-xs text-[#8F9CAE]">Attendance System Activity</span>
+              </div>
+            </div>
+          ) : (
+            <div className="py-6 text-center text-sm text-[#8F9CAE]">
+              No recent activity
+            </div>
+          )}
         </div>
       </main>
     </div>

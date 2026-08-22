@@ -1,8 +1,11 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Typography, Select, Card, Spin, Alert, Empty } from 'antd'
-import { CalendarOutlined, DollarOutlined } from '@ant-design/icons'
+import Link from 'next/link'
+import Navbar from '@/components/layout/Navbar'
+import { Typography, Select, Spin, Alert, Empty } from 'antd'
+import { CalendarOutlined } from '@ant-design/icons'
+import { ChevronRight } from 'lucide-react'
 import PayslipCard from '@/components/payroll/PayslipCard'
 import type { PayslipData } from '@/lib/payroll/payrollService'
 
@@ -55,58 +58,72 @@ export default function EmployeePayrollPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap justify-between items-center gap-4">
-        <div>
-          <Title level={2} className="!mb-1">
-            My Payslip
-          </Title>
-          <Text type="secondary">
-            View your itemized monthly salary breakdown, attendance adjustments, and net payout.
-          </Text>
+    <div className="min-h-screen flex flex-col bg-[#F4F7FB]">
+      <Navbar />
+
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Breadcrumb Navigation */}
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-[#8F9CAE]">
+          <Link href="/employee-dashboard" className="hover:text-[#0077FF] transition-colors">
+            Employee Dashboard
+          </Link>
+          <ChevronRight className="w-3.5 h-3.5 text-[#8F9CAE]/60" />
+          <span className="text-[#1A1D24] font-bold">Payroll & Payslips</span>
         </div>
 
-        {/* Month & Year Selectors */}
-        <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
-          <CalendarOutlined className="text-gray-400 ml-2" />
-          <Select
-            value={month}
-            onChange={setMonth}
-            options={months}
-            className="w-32"
-          />
-          <Select
-            value={year}
-            onChange={setYear}
-            options={[
-              { value: 2024, label: '2024' },
-              { value: 2025, label: '2025' },
-              { value: 2026, label: '2026' },
-              { value: 2027, label: '2027' },
-            ]}
-            className="w-24"
-          />
-        </div>
-      </div>
+        {/* Top Header */}
+        <div className="flex flex-wrap justify-between items-center gap-4 bg-white p-6 rounded-3xl border border-[#E5ECF2] shadow-xs">
+          <div>
+            <Title level={2} className="!mb-1">
+              My Payslip
+            </Title>
+            <Text type="secondary">
+              View your itemized monthly salary breakdown, attendance adjustments, and net payout.
+            </Text>
+          </div>
 
-      {loading ? (
-        <div className="py-24 text-center">
-          <Spin size="large" />
-          <div className="mt-4 text-gray-500 text-sm">Calculating salary and payable days...</div>
+          {/* Month & Year Selectors */}
+          <div className="flex items-center gap-2 bg-[#F4F7FB] p-2 rounded-xl border border-[#E5ECF2]">
+            <CalendarOutlined className="text-gray-400 ml-2" />
+            <Select
+              value={month}
+              onChange={setMonth}
+              options={months}
+              className="w-32"
+            />
+            <Select
+              value={year}
+              onChange={setYear}
+              options={[
+                { value: 2024, label: '2024' },
+                { value: 2025, label: '2025' },
+                { value: 2026, label: '2026' },
+                { value: 2027, label: '2027' },
+              ]}
+              className="w-24"
+            />
+          </div>
         </div>
-      ) : errorMsg ? (
-        <Alert
-          type="error"
-          showIcon
-          message="Payroll Notice"
-          description={errorMsg}
-          className="max-w-2xl mx-auto my-8"
-        />
-      ) : payslip ? (
-        <PayslipCard data={payslip} />
-      ) : (
-        <Empty description="No payslip available for this period" />
-      )}
+
+        {loading ? (
+          <div className="py-24 text-center">
+            <Spin size="large" />
+            <div className="mt-4 text-gray-500 text-sm font-semibold">Calculating salary and payable days...</div>
+          </div>
+        ) : errorMsg ? (
+          <Alert
+            type="error"
+            showIcon
+            message="Payroll Notice"
+            description={errorMsg}
+            className="max-w-2xl mx-auto my-8"
+          />
+        ) : payslip ? (
+          <PayslipCard data={payslip} />
+        ) : (
+          <Empty description="No payslip available for this period" />
+        )}
+      </main>
     </div>
   )
 }

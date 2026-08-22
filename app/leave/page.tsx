@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Navbar from '@/components/layout/Navbar'
 import { Tabs, Button, Typography, message } from 'antd'
 import { PlusOutlined, CalendarOutlined, AppstoreOutlined } from '@ant-design/icons'
+import { ChevronRight } from 'lucide-react'
 import LeaveBalanceCard from '@/components/leave/LeaveBalanceCard'
 import LeaveCalendar from '@/components/leave/LeaveCalendar'
 import LeaveRequestTable from '@/components/leave/LeaveRequestTable'
@@ -116,32 +118,47 @@ export default function LeavePage() {
   ]
 
   return (
-    <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-wrap justify-between items-center gap-4">
-        <div>
-          <Title level={2} className="!mb-1">
-            Time Off & Leave
-          </Title>
-          <Text type="secondary">
-            Manage your annual leave allowances, submit time off requests, and view the holiday calendar.
-          </Text>
+    <div className="min-h-screen flex flex-col bg-[#F4F7FB]">
+      <Navbar />
+
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Breadcrumb Navigation */}
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-[#8F9CAE]">
+          <Link href="/employee-dashboard" className="hover:text-[#0077FF] transition-colors">
+            Employee Dashboard
+          </Link>
+          <ChevronRight className="w-3.5 h-3.5 text-[#8F9CAE]/60" />
+          <span className="text-[#1A1D24] font-bold">Leave Requests</span>
         </div>
 
-        <Link href="/leave/new">
-          <Button type="primary" size="large" icon={<PlusOutlined />}>
-            New Time Off Request
-          </Button>
-        </Link>
-      </div>
+        {/* Top Header */}
+        <div className="flex flex-wrap justify-between items-center gap-4 bg-white p-6 rounded-3xl border border-[#E5ECF2] shadow-xs">
+          <div>
+            <Title level={2} className="!mb-1">
+              Time Off & Leave
+            </Title>
+            <Text type="secondary">
+              Manage your annual leave allowances, submit time off requests, and view the holiday calendar.
+            </Text>
+          </div>
 
-      {/* Main Tabs */}
-      <Tabs
-        activeKey={activeTab}
-        onChange={setActiveTab}
-        items={tabItems}
-        size="large"
-      />
+          <Link href="/leave/new">
+            <Button type="primary" size="large" icon={<PlusOutlined />}>
+              New Time Off Request
+            </Button>
+          </Link>
+        </div>
+
+        {/* Main Tabs */}
+        <div className="bg-white p-6 rounded-3xl border border-[#E5ECF2] shadow-xs">
+          <Tabs
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            items={tabItems}
+            size="large"
+          />
+        </div>
+      </main>
     </div>
   )
 }

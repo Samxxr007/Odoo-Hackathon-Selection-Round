@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { EmployeeProfile, UserRole, ResumeData, PrivateInfo, BankDetails, SalaryBreakdown } from '@/lib/types';
-import RoleSwitcher, { DEMO_USERS } from '@/components/profile/RoleSwitcher';
+import Link from 'next/link';
+import Navbar from '@/components/layout/Navbar';
+import { EmployeeProfile, UserRole, ResumeData, PrivateInfo, BankDetails } from '@/lib/types';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileTabs, { TabKey } from '@/components/profile/ProfileTabs';
 import ResumeTab from '@/components/profile/ResumeTab';
@@ -11,23 +12,17 @@ import SalaryTab from '@/components/profile/SalaryTab';
 import DocumentsTab from '@/components/profile/DocumentsTab';
 import SecurityTab from '@/components/profile/SecurityTab';
 import { 
-  Building2, 
-  Search, 
-  Bell, 
-  ShieldCheck, 
   AlertCircle, 
   RefreshCw, 
-  User, 
-  Briefcase, 
-  Sparkles,
-  Lock
+  ChevronRight,
+  ShieldCheck, 
+  Sparkles
 } from 'lucide-react';
 
 export default function ProfilePage() {
-  // Session & Role Simulator State
-  const [sessionUserId, setSessionUserId] = useState<string>('EMP-003'); // Default to John Doe
+  const [sessionUserId, setSessionUserId] = useState<string>('');
   const [sessionRole, setSessionRole] = useState<UserRole>('EMPLOYEE');
-  const [targetUserId, setTargetUserId] = useState<string>('EMP-003');
+  const [targetUserId, setTargetUserId] = useState<string>('');
 
   // Profile data & UI state
   const [profile, setProfile] = useState<EmployeeProfile | null>(null);
@@ -35,8 +30,23 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch session profile
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.user) {
+          setSessionUserId(json.user.id);
+          setSessionRole(json.user.role as UserRole);
+          setTargetUserId(json.user.id);
+        }
+      })
+      .catch((e) => console.error('Failed to fetch session user:', e));
+  }, []);
+
   // Fetch target profile with current session context
   const loadProfile = useCallback(async () => {
+    if (!targetUserId) return;
     setIsLoading(true);
     setError(null);
     try {
@@ -54,7 +64,6 @@ export default function ProfilePage() {
 
       setProfile(result.data);
 
-      // If user switched to an employee without salary permission, fallback to resume
       if (activeTab === 'salary' && !result.data.permissions?.canViewSalary) {
         setActiveTab('resume');
       }
@@ -68,13 +77,6 @@ export default function ProfilePage() {
   useEffect(() => {
     loadProfile();
   }, [loadProfile]);
-
-  // Session user switch handler
-  const handleSessionChange = (newUserId: string, newRole: UserRole) => {
-    setSessionUserId(newUserId);
-    setSessionRole(newRole);
-    setTargetUserId(newUserId); // default to own profile on login switch
-  };
 
   // Update resume data
   const handleUpdateResume = async (updatedResume: ResumeData) => {
@@ -125,84 +127,29 @@ export default function ProfilePage() {
     setProfile(result.data);
   };
 
-  const currentUserObj = DEMO_USERS.find((u) => u.id === sessionUserId) || DEMO_USERS[0];
   const canViewSalary = profile?.permissions?.canViewSalary ?? false;
   const isOwnerOrPrivileged = (profile?.permissions?.isOwner || profile?.permissions?.canEditOrg) ?? false;
 
   return (
-    <div className="min-h-screen bg-brand-bg flex flex-col">
-      {/* 1. Auth & Role Simulation Bar */}
-      <RoleSwitcher
-        currentSessionUser={sessionUserId}
-        currentRole={sessionRole}
-        targetUserId={targetUserId}
-        onSessionChange={handleSessionChange}
-        onTargetUserChange={(id) => setTargetUserId(id)}
-      />
+    <div className="min-h-screen bg-[#F4F7FB] flex flex-col">
+      <Navbar />
 
-      {/* 2. Top App Navigation Header */}
-      <header className="bg-white border-b border-brand-border sticky top-0 z-30 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          {/* Logo & Brand */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-primary to-brand-sky flex items-center justify-center text-white font-black text-xl shadow-sm">
-              O
-            </div>
-            <div>
-              <span className="text-base font-extrabold text-brand-text tracking-tight flex items-center gap-1.5">
-                <span>Odoo HRM Suite</span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-brand-tint text-brand-primary border border-brand-sky/30 uppercase">
-                  Member 2
-                </span>
-              </span>
-              <p className="text-[11px] text-brand-muted hidden sm:block">Employee Profile, Private Info, Salary & Security</p>
-            </div>
-          </div>
-
-          {/* Search bar */}
-          <div className="hidden md:flex items-center flex-1 max-w-md mx-6">
-            <div className="relative w-full">
-              <Search className="w-4 h-4 text-brand-muted absolute left-3.5 top-3" />
-              <input
-                type="text"
-                placeholder="Search employees, skills, departments..."
-                className="w-full pl-10 pr-4 py-2 text-xs bg-brand-bg rounded-xl border border-brand-border focus:outline-none focus:ring-2 focus:ring-brand-primary"
-              />
-            </div>
-          </div>
-
-          {/* Current Logged-in User Badge */}
-          <div className="flex items-center gap-3">
-            <button className="p-2 text-brand-muted hover:text-brand-text hover:bg-brand-bg rounded-xl relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-warning ring-2 ring-white" />
-            </button>
-
-            <div className="flex items-center gap-2.5 pl-3 border-l border-brand-border">
-              <div className="w-9 h-9 rounded-full bg-brand-tint border border-brand-sky/40 flex items-center justify-center text-brand-primary font-bold text-sm">
-                {currentUserObj.name.charAt(0)}
-              </div>
-              <div className="hidden sm:block text-left">
-                <span className="text-xs font-bold text-brand-text block leading-tight">
-                  {currentUserObj.name}
-                </span>
-                <span className="text-[10px] text-brand-muted block font-medium">
-                  {currentUserObj.role}
-                </span>
-              </div>
-            </div>
-          </div>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Breadcrumb Navigation */}
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-[#8F9CAE]">
+          <Link href="/employee-dashboard" className="hover:text-[#0077FF] transition-colors">
+            Employee Dashboard
+          </Link>
+          <ChevronRight className="w-3.5 h-3.5 text-[#8F9CAE]/60" />
+          <span className="text-[#1A1D24] font-bold">My Profile</span>
         </div>
-      </header>
 
-      {/* 3. Main Workspace Canvas */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Loading State */}
         {isLoading && !profile && (
           <div className="py-24 text-center">
-            <div className="w-10 h-10 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <h3 className="text-base font-bold text-brand-text">Loading Employee Profile...</h3>
-            <p className="text-xs text-brand-muted mt-1">Applying role authorization and field filters</p>
+            <div className="w-10 h-10 border-4 border-[#0077FF] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <h3 className="text-base font-bold text-[#1A1D24]">Loading Employee Profile...</h3>
+            <p className="text-xs text-[#8F9CAE] mt-1">Applying role authorization and field filters</p>
           </div>
         )}
 
@@ -268,7 +215,7 @@ export default function ProfilePage() {
                   initialConfig={profile.salaryConfig}
                   targetUserId={profile.id}
                   currentUserId={sessionUserId}
-                  onSalaryUpdated={(breakdown) => {
+                  onSalaryUpdated={() => {
                     loadProfile();
                   }}
                 />
@@ -287,7 +234,7 @@ export default function ProfilePage() {
               {activeTab === 'security' && isOwnerOrPrivileged && (
                 <SecurityTab
                   userId={profile.id}
-                  mustChangePassword={sessionUserId === profile.id && DEMO_USERS.find(u => u.id === sessionUserId)?.name === 'Jane Smith'}
+                  mustChangePassword={false}
                   currentSessionUserId={sessionUserId}
                 />
               )}
@@ -297,17 +244,17 @@ export default function ProfilePage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-brand-border py-4 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-brand-muted">
-          <span>Odoo Hackathon Selection Round — Member 2: Profile, Salary & Security</span>
+      <footer className="bg-white border-t border-[#E5ECF2] py-4 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#8F9CAE]">
+          <span>DAYFLOW HRMS Portal — Employee Profile & Settings</span>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
-              <ShieldCheck className="w-4 h-4 text-brand-primary" />
-              Role-Enforced APIs
+              <ShieldCheck className="w-4 h-4 text-[#0077FF]" />
+              Role-Enforced Authorization
             </span>
             <span className="flex items-center gap-1">
-              <Sparkles className="w-4 h-4 text-brand-sky" />
-              Formula-Driven Compensation
+              <Sparkles className="w-4 h-4 text-[#00B7FE]" />
+              Integrated HRMS Suite
             </span>
           </div>
         </div>

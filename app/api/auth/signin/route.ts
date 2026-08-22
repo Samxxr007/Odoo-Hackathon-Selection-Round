@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
         companyId: user.companyId,
         companyName: user.company?.name ?? 'Odoo HRMS',
       },
-      redirectTo: user.mustChangePassword ? '/change-password' : '/dashboard',
+      redirectTo: user.mustChangePassword ? '/change-password' : (user.role === 'ADMIN' ? '/dashboard' : '/employee-dashboard'),
     })
   } catch (error) {
     console.error('[Signin] Error:', error)
