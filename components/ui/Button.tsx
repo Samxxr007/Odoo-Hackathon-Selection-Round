@@ -40,6 +40,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || isLoading}
+        suppressHydrationWarning
         className={cn(
           'inline-flex items-center justify-center gap-2 rounded-lg font-medium',
           'transition-colors duration-150 focus-visible:outline-none',

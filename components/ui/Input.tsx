@@ -31,6 +31,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             id={inputId}
+            suppressHydrationWarning
             className={cn(
               'w-full h-10 rounded-lg border bg-white px-3 py-2 text-sm text-[#1A1D24]',
               'placeholder:text-[#8F9CAE]',
