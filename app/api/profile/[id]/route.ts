@@ -5,11 +5,12 @@ import { ApiResponse, EmployeeProfile } from '@/lib/types';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = getCurrentSession(req);
-    const targetUserId = params.id;
+    const resolvedParams = await params;
+    const targetUserId = resolvedParams.id;
 
     const targetUser = getDbUserById(targetUserId);
     if (!targetUser) {
@@ -35,11 +36,12 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = getCurrentSession(req);
-    const targetUserId = params.id;
+    const resolvedParams = await params;
+    const targetUserId = resolvedParams.id;
     const body = await req.json();
 
     const targetUser = getDbUserById(targetUserId);

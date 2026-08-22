@@ -5,13 +5,14 @@ import { ApiResponse, DocumentRecord } from '@/lib/types';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { docId: string } }
+  { params }: { params: Promise<{ docId: string }> }
 ) {
   try {
     const session = getCurrentSession(req);
     const { searchParams } = new URL(req.url);
     const targetUserId = searchParams.get('userId') || session.id;
-    const docId = params.docId;
+    const resolvedParams = await params;
+    const docId = resolvedParams.docId;
 
     if (!canViewPrivateInfo(session, targetUserId)) {
       return NextResponse.json<ApiResponse>(
@@ -51,13 +52,14 @@ export async function GET(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { docId: string } }
+  { params }: { params: Promise<{ docId: string }> }
 ) {
   try {
     const session = getCurrentSession(req);
     const { searchParams } = new URL(req.url);
     const targetUserId = searchParams.get('userId') || session.id;
-    const docId = params.docId;
+    const resolvedParams = await params;
+    const docId = resolvedParams.docId;
 
     if (!canEditPersonalProfile(session, targetUserId)) {
       return NextResponse.json<ApiResponse>(

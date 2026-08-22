@@ -6,11 +6,12 @@ import { ApiResponse, SalaryBreakdown } from '@/lib/types';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = getCurrentSession(req);
-    const targetUserId = params.id;
+    const resolvedParams = await params;
+    const targetUserId = resolvedParams.id;
 
     if (!canViewOrEditSalary(session)) {
       return NextResponse.json<ApiResponse>(
@@ -42,11 +43,12 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = getCurrentSession(req);
-    const targetUserId = params.id;
+    const resolvedParams = await params;
+    const targetUserId = resolvedParams.id;
 
     if (!canViewOrEditSalary(session)) {
       return NextResponse.json<ApiResponse>(
