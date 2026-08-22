@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Badge, Button, Dropdown, List, Typography, Space, Empty, Spin } from 'antd'
-import { BellOutlined, CheckOutlined } from '@ant-design/icons'
+import { Badge, Button, Dropdown, List, Typography, Empty, Spin } from 'antd'
+import { BellOutlined } from '@ant-design/icons'
 import type { NotificationDTO } from '@/types/notifications'
 
 const { Text } = Typography
@@ -109,7 +109,7 @@ export default function NotificationBell() {
 
   return (
     <Dropdown
-      dropdownRender={() => menuContent}
+      popupRender={() => menuContent}
       trigger={['click']}
       open={open}
       onOpenChange={setOpen}
