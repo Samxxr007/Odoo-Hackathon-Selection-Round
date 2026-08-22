@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/attendance/Navbar';
 import { AdminFilters } from '@/components/attendance/AdminFilters';
 import { AdminAttendanceTable } from '@/components/attendance/AdminAttendanceTable';
@@ -9,9 +10,11 @@ import { Users, CheckCircle2, XCircle, Umbrella, Clock, RefreshCw, AlertTriangle
 import { getBusinessDateString } from '@/lib/attendance/timezone';
 
 export default function AdminAttendancePage() {
+  const router = useRouter();
   const [currentDate, setCurrentDate] = useState<string>(getBusinessDateString());
   const [search, setSearch] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [user, setUser] = useState<any>({ name: 'Admin', role: 'ADMIN' });
 
   const [data, setData] = useState<{
     summary: { totalEmployees: number; present: number; absent: number; halfDay: number; leave: number };
@@ -28,6 +31,21 @@ export default function AdminAttendancePage() {
   const [selectedRecordForCorrection, setSelectedRecordForCorrection] = useState<any | null>(null);
   const [isCorrectionOpen, setIsCorrectionOpen] = useState<boolean>(false);
 
+  // Client-Side Permission Verification Guard
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((json) => {
+        if (!json.success || !json.user || json.user.role !== 'ADMIN') {
+          // Redirect unauthorized users to /unauthorized page
+          router.replace('/unauthorized');
+        } else {
+          setUser({ name: json.user.name, role: json.user.role });
+        }
+      })
+      .catch(() => router.replace('/unauthorized'));
+  }, [router]);
+
   const fetchAdminData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -39,6 +57,11 @@ export default function AdminAttendancePage() {
       });
 
       const res = await fetch(`/api/admin/attendance?${query.toString()}`);
+      if (res.status === 403 || res.status === 401) {
+        router.replace('/unauthorized');
+        return;
+      }
+
       const json = await res.json();
 
       if (json.success && json.data) {
@@ -54,7 +77,7 @@ export default function AdminAttendancePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentDate, search, statusFilter]);
+  }, [currentDate, search, statusFilter, router]);
 
   useEffect(() => {
     fetchAdminData();
@@ -67,7 +90,7 @@ export default function AdminAttendancePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-dayflow-bg">
-      <Navbar currentRole="ADMIN" currentUserName="Sarah Connor (HR Admin)" />
+      <Navbar currentUserName={user.name} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Header */}

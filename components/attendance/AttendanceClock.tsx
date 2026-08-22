@@ -14,16 +14,17 @@ export const AttendanceClock: React.FC<AttendanceClockProps> = ({
   isCheckedIn,
   isCheckedOut,
 }) => {
-  const [now, setNow] = useState<Date>(new Date());
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
+    setNow(new Date());
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
   // Compute live elapsed time if checked in but not checked out
   const getElapsedString = () => {
-    if (!isCheckedIn || isCheckedOut || !checkInTime) return null;
+    if (!isCheckedIn || isCheckedOut || !checkInTime || !now) return null;
     const checkInDate = new Date(checkInTime);
     if (isNaN(checkInDate.getTime())) return null;
 
@@ -47,8 +48,13 @@ export const AttendanceClock: React.FC<AttendanceClockProps> = ({
         </div>
         <div>
           <span className="text-xs uppercase tracking-wider font-semibold text-dayflow-muted">Current Time</span>
-          <div className="text-2xl font-bold text-dayflow-text tracking-tight">
-            {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          <div
+            className="text-2xl font-bold text-dayflow-text tracking-tight font-mono"
+            suppressHydrationWarning
+          >
+            {now
+              ? now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+              : '--:--:-- --'}
           </div>
         </div>
       </div>
@@ -58,7 +64,12 @@ export const AttendanceClock: React.FC<AttendanceClockProps> = ({
           <Timer className="w-5 h-5 text-emerald-600 animate-pulse" />
           <div>
             <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800">Elapsed Shift Time</span>
-            <div className="text-lg font-bold text-emerald-900 font-mono tracking-wide">{elapsed}</div>
+            <div
+              className="text-lg font-bold text-emerald-900 font-mono tracking-wide"
+              suppressHydrationWarning
+            >
+              {elapsed}
+            </div>
           </div>
         </div>
       )}

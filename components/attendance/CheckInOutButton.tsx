@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { LogIn, LogOut, Loader2 } from 'lucide-react';
+import { LogIn, LogOut, Loader2, CheckCircle2 } from 'lucide-react';
 
 interface CheckInOutButtonProps {
   isCheckedIn: boolean;
@@ -18,8 +18,9 @@ export const CheckInOutButton: React.FC<CheckInOutButtonProps> = ({
 }) => {
   if (isCheckedOut) {
     return (
-      <div className="w-full sm:w-auto text-center px-6 py-3 bg-emerald-50 text-emerald-800 font-semibold rounded-xl border border-emerald-200 shadow-xs">
-        Shift Completed Today
+      <div className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-800 font-semibold rounded-xl border border-emerald-200 shadow-xs">
+        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        <span>Attendance Completed Today</span>
       </div>
     );
   }

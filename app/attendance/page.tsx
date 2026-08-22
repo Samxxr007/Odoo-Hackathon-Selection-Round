@@ -1,16 +1,17 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Navbar } from '@/components/attendance/Navbar';
 import { MonthNavigator } from '@/components/attendance/MonthNavigator';
 import { TodayAttendanceCard } from '@/components/attendance/TodayAttendanceCard';
 import { AttendanceSummaryCards } from '@/components/attendance/AttendanceSummaryCards';
 import { AttendanceTable } from '@/components/attendance/AttendanceTable';
-import { RefreshCw, AlertCircle } from 'lucide-react';
+import { RefreshCw, AlertCircle, ChevronRight } from 'lucide-react';
 
 export default function EmployeeAttendancePage() {
   const [currentMonth, setCurrentMonth] = useState<string>('2026-08');
-  const [user, setUser] = useState<any>({ name: 'Aswin Acharya', role: 'EMPLOYEE' });
+  const [user, setUser] = useState<any>({ name: '' });
   
   // Today's attendance state
   const [todayState, setTodayState] = useState<{
@@ -36,6 +37,18 @@ export default function EmployeeAttendancePage() {
   const [isLoadingMonthly, setIsLoadingMonthly] = useState<boolean>(true);
   const [isToggling, setIsToggling] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Fetch authenticated session user
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.user) {
+          setUser({ name: json.user.name });
+        }
+      })
+      .catch((e) => console.error('Failed to fetch session user:', e));
+  }, []);
 
   // Fetch today's state
   const fetchTodayState = useCallback(async () => {
@@ -110,13 +123,20 @@ export default function EmployeeAttendancePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-dayflow-bg">
-      <Navbar currentRole={user.role} currentUserName={user.name} />
+      <Navbar currentUserName={user.name} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Page Title & Month Navigator */}
+        {/* Breadcrumb Navigation & Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-black text-dayflow-text tracking-tight">Attendance Dashboard</h1>
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-dayflow-muted">
+              <Link href="/employee-dashboard" className="hover:text-dayflow-primary transition-colors">
+                Employee Dashboard
+              </Link>
+              <ChevronRight className="w-3.5 h-3.5 text-dayflow-muted/60" />
+              <span className="text-dayflow-text font-bold">Attendance</span>
+            </div>
+            <h1 className="text-2xl font-black text-dayflow-text tracking-tight">My Attendance Dashboard</h1>
             <p className="text-sm text-dayflow-muted">Track your daily shift duration, extra hours, and monthly logs</p>
           </div>
 
@@ -126,7 +146,7 @@ export default function EmployeeAttendancePage() {
                 fetchTodayState();
                 fetchMonthlyData(currentMonth);
               }}
-              className="p-2 rounded-xl bg-white border border-dayflow-border hover:bg-dayflow-light text-dayflow-muted hover:text-dayflow-text shadow-2xs transition-colors"
+              className="p-2.5 rounded-xl bg-white border border-dayflow-border hover:bg-dayflow-light text-dayflow-muted hover:text-dayflow-text shadow-2xs transition-colors"
               title="Refresh Data"
             >
               <RefreshCw className="w-4 h-4" />

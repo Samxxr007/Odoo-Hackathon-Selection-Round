@@ -1,46 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Clock, ShieldCheck, UserCheck, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Clock, UserCheck } from 'lucide-react';
 
 interface NavbarProps {
-  currentRole: 'EMPLOYEE' | 'ADMIN';
   currentUserName: string;
-  onRoleSwitch?: (newRole: 'EMPLOYEE' | 'ADMIN') => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({
-  currentRole,
-  currentUserName,
-  onRoleSwitch,
-}) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentUserName }) => {
   const pathname = usePathname();
-  const [isSwitching, setIsSwitching] = useState(false);
-
-  const handleRoleToggle = async () => {
-    const nextRole = currentRole === 'EMPLOYEE' ? 'ADMIN' : 'EMPLOYEE';
-    setIsSwitching(true);
-
-    try {
-      await fetch('/api/auth/dev-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: nextRole }),
-      });
-
-      if (onRoleSwitch) {
-        onRoleSwitch(nextRole);
-      } else {
-        window.location.reload();
-      }
-    } catch (e) {
-      console.error('Failed to switch role', e);
-    } finally {
-      setIsSwitching(false);
-    }
-  };
+  const cleanName = currentUserName ? currentUserName.replace(/\s*\([^)]*\)/g, '').trim() : '';
 
   return (
     <header className="bg-white border-b border-dayflow-border sticky top-0 z-40 shadow-xs">
@@ -48,7 +19,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2.5">
+            <Link href="/employee-dashboard" className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-dayflow-primary via-dayflow-secondary to-dayflow-sky flex items-center justify-center text-white font-black text-lg shadow-sm">
                 D
               </div>
@@ -57,13 +28,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                   DAYFLOW
                 </span>
                 <span className="text-[10px] font-bold text-dayflow-sky tracking-wider uppercase">
-                  HRMS Attendance
+                  HRMS Portal
                 </span>
               </div>
             </Link>
 
-            {/* Navigation Tabs */}
+            {/* Employee Navigation */}
             <nav className="hidden md:flex items-center gap-1">
+              <Link
+                href="/employee-dashboard"
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 ${
+                  pathname === '/employee-dashboard'
+                    ? 'bg-dayflow-light text-dayflow-primary'
+                    : 'text-dayflow-muted hover:text-dayflow-text hover:bg-dayflow-bg'
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Employee Dashboard
+              </Link>
+
               <Link
                 href="/attendance"
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 ${
@@ -75,47 +58,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Clock className="w-4 h-4" />
                 My Attendance
               </Link>
-
-              <Link
-                href="/admin/attendance"
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 ${
-                  pathname.startsWith('/admin')
-                    ? 'bg-dayflow-light text-dayflow-primary'
-                    : 'text-dayflow-muted hover:text-dayflow-text hover:bg-dayflow-bg'
-                }`}
-              >
-                <ShieldCheck className="w-4 h-4" />
-                Admin Management
-              </Link>
             </nav>
           </div>
 
-          {/* User Profile & Role Switcher Badge */}
+          {/* User Badge - Pure Employee Name, Zero Role Text */}
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-dayflow-bg border border-dayflow-border">
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-dayflow-bg border border-dayflow-border shadow-2xs">
               <UserCheck className="w-4 h-4 text-dayflow-primary" />
-              <span className="text-xs font-semibold text-dayflow-text">{currentUserName}</span>
-              <span
-                className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${
-                  currentRole === 'ADMIN'
-                    ? 'bg-purple-100 text-purple-800 border border-purple-200'
-                    : 'bg-blue-100 text-blue-800 border border-blue-200'
-                }`}
-              >
-                {currentRole}
-              </span>
+              <span className="text-xs font-bold text-dayflow-text">{cleanName || 'Employee'}</span>
             </div>
-
-            {/* Role Switcher Button */}
-            <button
-              onClick={handleRoleToggle}
-              disabled={isSwitching}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-dayflow-border bg-white hover:bg-dayflow-light text-dayflow-text shadow-2xs transition-all active:scale-95 disabled:opacity-50"
-              title="Toggle role between Employee and Admin HR"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-dayflow-warning" />
-              <span>Switch to {currentRole === 'EMPLOYEE' ? 'Admin' : 'Employee'}</span>
-            </button>
           </div>
         </div>
       </div>
