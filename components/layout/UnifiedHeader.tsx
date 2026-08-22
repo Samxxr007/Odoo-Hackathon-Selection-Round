@@ -72,24 +72,20 @@ export function UnifiedHeader({ initialUser }: UnifiedHeaderProps) {
       try {
         const res = await fetch('/api/attendance/me/today')
         if (res.ok) {
-          const data = await res.json()
-          if (data.record) {
-            const hasCheckIn = !!data.record.checkIn
-            const hasCheckOut = !!data.record.checkOut
-            setIsCheckedIn(hasCheckIn && !hasCheckOut)
+          const json = await res.json()
+          const record = json.record || json.data?.record
+          const checkedIn = json.isCheckedIn ?? (record && record.checkIn && !record.checkOut)
+          setIsCheckedIn(!!checkedIn)
 
-            if (hasCheckIn) {
-              const d = new Date(data.record.checkIn)
-              setCheckInTime(
-                d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
-              )
-              const diffMinutes = Math.floor((Date.now() - d.getTime()) / (1000 * 60))
-              const h = Math.floor(diffMinutes / 60)
-              const m = diffMinutes % 60
-              setElapsedTime(`${String(h).padStart(2, '0')}h ${String(m).padStart(2, '0')}m`)
-            }
-          } else {
-            setIsCheckedIn(false)
+          if (record && record.checkIn) {
+            const d = new Date(record.checkIn)
+            setCheckInTime(
+              d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+            )
+            const diffMinutes = Math.floor((Date.now() - d.getTime()) / (1000 * 60))
+            const h = Math.floor(diffMinutes / 60)
+            const m = diffMinutes % 60
+            setElapsedTime(`${String(h).padStart(2, '0')}h ${String(m).padStart(2, '0')}m`)
           }
         }
       } catch (err) {
@@ -104,12 +100,16 @@ export function UnifiedHeader({ initialUser }: UnifiedHeaderProps) {
       setLoadingToggle(true)
       const res = await fetch('/api/attendance/toggle', { method: 'POST' })
       if (res.ok) {
-        const data = await res.json()
-        setIsCheckedIn(data.isCheckedIn)
-        if (data.record?.checkIn) {
-          const d = new Date(data.record.checkIn)
+        const json = await res.json()
+        const newCheckedIn = json.isCheckedIn ?? (json.action === 'CHECKED_IN')
+        setIsCheckedIn(newCheckedIn)
+        
+        const rec = json.record || json.attendance
+        if (rec?.checkIn) {
+          const d = new Date(rec.checkIn)
           setCheckInTime(d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }))
         }
+        router.refresh()
       }
     } catch (e) {
       console.error('Failed to toggle attendance', e)
@@ -147,7 +147,7 @@ export function UnifiedHeader({ initialUser }: UnifiedHeaderProps) {
                 <span className="font-bold text-[#1A1D24] text-sm leading-tight tracking-tight">
                   {user?.companyName || 'Odoo India'}
                 </span>
-                <span className="text-[10px] font-semibold text-[#8F9CAE] uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-[#8F9CAE] uppercase tracking-wider">
                   Human Resources
                 </span>
               </div>
@@ -186,10 +186,10 @@ export function UnifiedHeader({ initialUser }: UnifiedHeaderProps) {
             <div className="hidden lg:flex items-center gap-2.5 bg-[#F4F7FB] border border-[#E5ECF2] px-3.5 py-1.5 rounded-xl">
               <div className="flex items-center gap-2">
                 <span className={cn(
-                  'w-2 h-2 rounded-full',
+                  'w-2.5 h-2.5 rounded-full',
                   isCheckedIn ? 'bg-[#22C55E]' : 'bg-[#F9911E]'
                 )} />
-                <span className="text-xs font-semibold text-[#1A1D24]">
+                <span className="text-xs font-bold text-[#1A1D24]">
                   {isCheckedIn ? `In since ${checkInTime}` : 'Not Checked In'}
                 </span>
               </div>
@@ -198,13 +198,13 @@ export function UnifiedHeader({ initialUser }: UnifiedHeaderProps) {
                 onClick={handleToggleAttendance}
                 disabled={loadingToggle}
                 className={cn(
-                  'text-[11px] font-bold px-3 py-1 rounded-lg transition-colors cursor-pointer',
+                  'text-[11px] font-bold px-3 py-1 rounded-lg transition-colors cursor-pointer disabled:opacity-50',
                   isCheckedIn
                     ? 'bg-white border border-[#E5ECF2] text-rose-600 hover:bg-rose-50 shadow-2xs'
                     : 'bg-[#0077FF] text-white hover:bg-[#0066DD]'
                 )}
               >
-                {isCheckedIn ? 'Check Out' : 'Check In'}
+                {loadingToggle ? 'Updating...' : isCheckedIn ? 'Check Out' : 'Check In'}
               </button>
             </div>
 
@@ -249,7 +249,7 @@ export function UnifiedHeader({ initialUser }: UnifiedHeaderProps) {
                     <Link
                       href="/profile"
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-[#1A1D24] hover:bg-[#F4F7FB] font-medium"
+                      className="flex items-center gap-2 px-4 py-2 text-[#1A1D24] hover:bg-[#F4F7FB] font-semibold"
                     >
                       <UserIcon className="w-3.5 h-3.5 text-[#8F9CAE]" />
                       My Profile
@@ -259,7 +259,7 @@ export function UnifiedHeader({ initialUser }: UnifiedHeaderProps) {
                       <Link
                         href="/admin/attendance"
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-[#1A1D24] hover:bg-[#F4F7FB] font-medium"
+                        className="flex items-center gap-2 px-4 py-2 text-[#1A1D24] hover:bg-[#F4F7FB] font-semibold"
                       >
                         <Clock className="w-3.5 h-3.5 text-[#8F9CAE]" />
                         Attendance Admin
@@ -270,7 +270,7 @@ export function UnifiedHeader({ initialUser }: UnifiedHeaderProps) {
                       <Link
                         href="/leave/admin"
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-[#1A1D24] hover:bg-[#F4F7FB] font-medium"
+                        className="flex items-center gap-2 px-4 py-2 text-[#1A1D24] hover:bg-[#F4F7FB] font-semibold"
                       >
                         <CalendarDays className="w-3.5 h-3.5 text-[#8F9CAE]" />
                         Time Off Admin
@@ -281,7 +281,7 @@ export function UnifiedHeader({ initialUser }: UnifiedHeaderProps) {
                   <div className="pt-1 border-t border-[#E5ECF2]">
                     <button
                       onClick={handleSignOut}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 text-left cursor-pointer"
+                      className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 text-left cursor-pointer"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                       Sign Out

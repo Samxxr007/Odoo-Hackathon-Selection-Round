@@ -7,9 +7,14 @@ export async function POST(req: NextRequest) {
     const session = await requireAuth(req);
     const result = await toggleAttendance(session.userId);
 
+    const isCheckedIn = result.action === 'CHECKED_IN' || (result.attendance && result.attendance.checkOut === null);
+
     return NextResponse.json({
       success: true,
       action: result.action,
+      isCheckedIn,
+      isCheckedOut: !isCheckedIn,
+      record: result.attendance,
       attendance: result.attendance,
     });
   } catch (error: any) {

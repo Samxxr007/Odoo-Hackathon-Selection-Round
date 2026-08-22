@@ -67,14 +67,10 @@ export async function toggleAttendance(
     });
 
     if (!existing) {
-      // CASE 1: CHECK-IN
-      // Calculate if check-in is late based on shiftStartTime and gracePeriod
-      const [shiftHour, shiftMin] = employee.shiftStartTime.split(':').map(Number);
-      
-      // Calculate shift start timestamp on current business date
+      // CASE 1: INITIAL CHECK-IN
+      const [shiftHour, shiftMin] = (employee.shiftStartTime || '09:00').split(':').map(Number);
       const shiftStartDate = new Date(timestamp);
-      shiftStartDate.setHours(shiftHour, shiftMin + employee.gracePeriodMinutes, 0, 0);
-      
+      shiftStartDate.setHours(shiftHour, shiftMin + (employee.gracePeriodMinutes || 15), 0, 0);
       const isLate = timestamp.getTime() > shiftStartDate.getTime();
 
       const newRecord = await tx.attendance.create({
@@ -114,14 +110,11 @@ export async function toggleAttendance(
         );
       }
 
-      // Calculate work hours in minutes
       const durationMs = timestamp.getTime() - existing.checkIn.getTime();
       const workHoursMinutes = Math.round(durationMs / (1000 * 60));
 
       const shiftDuration = employee.shiftDurationMinutes || ATTENDANCE_CONFIG.STANDARD_SHIFT_MINUTES;
       const extraHoursMinutes = Math.max(0, workHoursMinutes - shiftDuration);
-
-      // Determine half-day vs present status based on threshold
       const halfDayThreshold = ATTENDANCE_CONFIG.HALF_DAY_THRESHOLD_MINUTES;
       const status: AttendanceStatus =
         workHoursMinutes < halfDayThreshold ? 'HALF_DAY' : 'PRESENT';

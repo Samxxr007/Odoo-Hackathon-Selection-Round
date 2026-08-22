@@ -7,9 +7,14 @@ export async function GET(req: NextRequest) {
     const session = await requireAuth(req);
     const data = await getTodayAttendance(session.userId);
 
+    const isCheckedIn = data.isCheckedIn && !data.isCheckedOut;
+
     return NextResponse.json({
       success: true,
       data,
+      isCheckedIn,
+      isCheckedOut: data.isCheckedOut,
+      record: data.record,
     });
   } catch (error: any) {
     if (error instanceof AttendanceError) {

@@ -123,13 +123,23 @@ export function EnhancedProfileView({
     }
   }
 
-  const joinDateFormatted = employee.joiningDate
+  const joinDateFormatted = employee?.joiningDate
     ? new Date(employee.joiningDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    : 'June 1, 2022'
+    : 'Jan 15, 2020'
+
+  const employeeName = employee?.name || 'Alexander Wright'
+  const employeeLoginId = employee?.loginId || 'OIADWR20200001'
+  const employeeRole = employee?.role || 'ADMIN'
+  const employeeDesignation = employee?.designation || 'Chief Technology Officer (CTO)'
+  const employeeDepartment = employee?.department || 'Executive Leadership'
+  const employeeLocation = employee?.location || 'Gandhinagar, Gujarat'
+  const employeeEmail = employee?.email || 'admin@odoo.com'
+  const employeePhone = employee?.phone || '+91 98250 11223'
+  const employeePhoto = employee?.profilePhotoUrl || employee?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80'
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* 1. Header Breadcrumb */}
+      {/* 1. Header Navigation */}
       <div className="flex items-center justify-between">
         <Link
           href="/dashboard"
@@ -150,97 +160,101 @@ export function EnhancedProfileView({
         </div>
       </div>
 
-      {/* 2. Employee Profile Header Card with Hero Gradient */}
+      {/* 2. Employee Profile Header Card */}
       <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5ECF2] shadow-xs overflow-hidden">
-        {/* Hero Gradient Banner (Vivid Sky Blue to Primary Blue Accent) */}
-        <div className="h-28 w-full bg-gradient-to-r from-[#EAF3FF] via-[#F4F7FB] to-[#EAF3FF] border-b border-[#E5ECF2] relative px-6 flex items-center justify-end">
-          <span className="text-xs font-bold text-[#1A1D24] bg-[#FFFFFF] px-3.5 py-1 rounded-lg border border-[#E5ECF2] shadow-2xs">
-            {employee.companyName || 'Odoo India Technology Pvt. Ltd.'}
+        {/* Top Decorative Bar */}
+        <div className="h-20 w-full bg-gradient-to-r from-[#EAF3FF] via-[#F4F7FB] to-[#EAF3FF] border-b border-[#E5ECF2] px-6 sm:px-8 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#0077FF]" />
+            <span className="text-xs font-bold text-[#1A1D24]">Employee Profile</span>
+          </div>
+          <span className="text-xs font-bold text-[#1A1D24] bg-[#FFFFFF] px-3 py-1 rounded-lg border border-[#E5ECF2] shadow-2xs">
+            {employee?.companyName || 'Odoo India Technology Pvt. Ltd.'}
           </span>
         </div>
 
-        {/* Profile Details */}
-        <div className="px-6 sm:px-8 pb-6 pt-0">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 -mt-12 mb-6">
-            {/* Avatar & High-Contrast Identity */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        {/* Profile Identity & Details */}
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-[#E5ECF2]">
+            {/* Avatar & High-Contrast Name Section */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
               <div className="relative shrink-0">
                 <img
-                  src={employee.profilePhotoUrl || employee.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80'}
-                  alt={employee.name}
-                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-4 ring-white bg-[#F4F7FB] shadow-md border border-[#E5ECF2]"
+                  src={employeePhoto}
+                  alt={employeeName}
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-4 ring-[#EAF3FF] bg-[#F4F7FB] shadow-sm border border-[#E5ECF2]"
                 />
                 <span
-                  className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full bg-[#22C55E] border-2 border-white"
-                  title="Present in office"
+                  className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-[#22C55E] border-2 border-white"
+                  title="Active"
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <h1 className="text-xl sm:text-2xl font-black text-[#1A1D24] tracking-tight">
-                    {employee.name}
+                  <h1 className="text-2xl sm:text-3xl font-black text-[#1A1D24] tracking-tight leading-tight">
+                    {employeeName}
                   </h1>
                   <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#F4F7FB] text-[#1A1D24] border border-[#E5ECF2]">
-                    {employee.loginId}
+                    {employeeLoginId}
                   </span>
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#EAF3FF] text-[#0077FF] border border-[#E5ECF2]">
-                    {employee.role || 'EMPLOYEE'}
+                    {employeeRole}
                   </span>
                 </div>
                 <p className="text-sm font-bold text-[#0077FF]">
-                  {employee.designation || 'Software Engineer'}
+                  {employeeDesignation}
                 </p>
-                <p className="text-xs text-[#8F9CAE] font-medium">
-                  {employee.department} · {employee.location || 'Gandhinagar, Gujarat'}
+                <p className="text-xs text-[#8F9CAE] font-semibold">
+                  {employeeDepartment} · {employeeLocation}
                 </p>
               </div>
             </div>
 
             {/* Contact Actions */}
-            <div className="flex items-center gap-2 self-stretch sm:self-auto justify-start sm:justify-end">
+            <div className="flex items-center gap-2.5 self-stretch sm:self-auto justify-start sm:justify-end">
               <a
-                href={`mailto:${employee.email}`}
-                className="px-3.5 py-2 rounded-xl bg-[#F4F7FB] hover:bg-[#EAF3FF] border border-[#E5ECF2] text-[#1A1D24] font-bold text-xs transition-colors flex items-center gap-1.5 shadow-2xs"
+                href={`mailto:${employeeEmail}`}
+                className="px-4 py-2 rounded-xl bg-[#F4F7FB] hover:bg-[#EAF3FF] border border-[#E5ECF2] text-[#1A1D24] font-bold text-xs transition-colors flex items-center gap-2 shadow-2xs"
               >
                 <Mail className="w-3.5 h-3.5 text-[#0077FF]" />
-                <span>{employee.email}</span>
+                <span>{employeeEmail}</span>
               </a>
-              {employee.phone && (
+              {employeePhone && (
                 <a
-                  href={`tel:${employee.phone}`}
-                  className="px-3.5 py-2 rounded-xl bg-[#F4F7FB] hover:bg-[#EAF3FF] border border-[#E5ECF2] text-[#1A1D24] font-bold text-xs transition-colors flex items-center gap-1.5 shadow-2xs"
+                  href={`tel:${employeePhone}`}
+                  className="px-4 py-2 rounded-xl bg-[#F4F7FB] hover:bg-[#EAF3FF] border border-[#E5ECF2] text-[#1A1D24] font-bold text-xs transition-colors flex items-center gap-2 shadow-2xs"
                 >
                   <Phone className="w-3.5 h-3.5 text-[#0077FF]" />
-                  <span>{employee.phone}</span>
+                  <span>{employeePhone}</span>
                 </a>
               )}
             </div>
           </div>
 
           {/* Quick Metrics Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-[#E5ECF2] text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 text-xs">
             <div className="p-3.5 rounded-xl bg-[#F4F7FB] border border-[#E5ECF2]">
-              <span className="text-[#8F9CAE] font-semibold block">Joining Date</span>
+              <span className="text-[#8F9CAE] font-bold block">Joining Date</span>
               <span className="font-bold text-[#1A1D24] mt-0.5 block">{joinDateFormatted}</span>
             </div>
             <div className="p-3.5 rounded-xl bg-[#F4F7FB] border border-[#E5ECF2]">
-              <span className="text-[#8F9CAE] font-semibold block">Working Hours</span>
+              <span className="text-[#8F9CAE] font-bold block">Working Hours</span>
               <span className="font-bold text-[#1A1D24] mt-0.5 block">09:00 AM – 06:00 PM</span>
             </div>
             <div className="p-3.5 rounded-xl bg-[#F4F7FB] border border-[#E5ECF2]">
-              <span className="text-[#8F9CAE] font-semibold block">Leave Balance</span>
+              <span className="text-[#8F9CAE] font-bold block">Leave Balance</span>
               <span className="font-bold text-[#1A1D24] mt-0.5 block">24 Days Paid · 7 Days Sick</span>
             </div>
             <div className="p-3.5 rounded-xl bg-[#F4F7FB] border border-[#E5ECF2]">
-              <span className="text-[#8F9CAE] font-semibold block">Employment Type</span>
+              <span className="text-[#8F9CAE] font-bold block">Employment Type</span>
               <span className="font-bold text-[#22C55E] mt-0.5 block">Full-time Regular</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Tab Bar Navigation (Light Blue Tint on Active) */}
+      {/* 3. Tab Bar Navigation */}
       <div className="flex border-b border-[#E5ECF2] space-x-6">
         <button
           onClick={() => setActiveTab('resume')}
@@ -309,7 +323,7 @@ export function EnhancedProfileView({
               <div className="flex items-start justify-between gap-4 pb-4 border-b border-[#E5ECF2]">
                 <div>
                   <h4 className="text-sm font-bold text-[#1A1D24]">
-                    {employee.designation || 'Software Engineer'}
+                    {employeeDesignation}
                   </h4>
                   <p className="text-xs font-semibold text-[#8F9CAE] mt-0.5">
                     Odoo India Technology Pvt. Ltd. · Full-time
@@ -404,26 +418,26 @@ export function EnhancedProfileView({
               </h3>
 
               <div className="space-y-3 pt-1">
-                <div className="p-3 rounded-xl bg-[#F4F7FB] border border-[#E5ECF2]">
+                <div className="p-3.5 rounded-xl bg-[#F4F7FB] border border-[#E5ECF2]">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#1A1D24]">
                       AWS Certified Developer – Associate
                     </span>
                     <span className="text-[10px] font-bold text-[#22C55E] bg-emerald-50 px-1.5 py-0.5 rounded">Verified</span>
                   </div>
-                  <span className="text-[11px] text-[#8F9CAE] block mt-0.5">
+                  <span className="text-[11px] text-[#8F9CAE] block mt-0.5 font-medium">
                     Amazon Web Services · Issued 2023 · Credential ID: AWS-849201
                   </span>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#F4F7FB] border border-[#E5ECF2]">
+                <div className="p-3.5 rounded-xl bg-[#F4F7FB] border border-[#E5ECF2]">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#1A1D24]">
                       Meta Professional Frontend Developer
                     </span>
                     <span className="text-[10px] font-bold text-[#22C55E] bg-emerald-50 px-1.5 py-0.5 rounded">Verified</span>
                   </div>
-                  <span className="text-[11px] text-[#8F9CAE] block mt-0.5">
+                  <span className="text-[11px] text-[#8F9CAE] block mt-0.5 font-medium">
                     Meta · Issued 2022 · Credential ID: META-994812
                   </span>
                 </div>
@@ -524,7 +538,7 @@ export function EnhancedProfileView({
               </div>
               <div className="py-2.5 flex items-center justify-between">
                 <span className="text-[#8F9CAE] font-medium">Employee Code</span>
-                <span className="font-mono font-bold text-[#1A1D24]">{employee.loginId}</span>
+                <span className="font-mono font-bold text-[#1A1D24]">{employeeLoginId}</span>
               </div>
             </div>
           </div>
