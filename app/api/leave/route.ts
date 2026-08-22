@@ -20,6 +20,8 @@ const CreateLeaveSchema = z.object({
   remarks: z.string().max(1000).optional(),
 })
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/leave — employee gets own list; admin gets all
 export async function GET(req: NextRequest) {
   try {

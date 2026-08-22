@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/authGuard'
 import { getCalendarData } from '@/lib/leave/calendarService'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/leave/calendar?year=2026
 export async function GET(req: NextRequest) {
   try {

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/authGuard'
 import { getAllLeaveBalances } from '@/lib/leave/balanceService'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/leave/balance?year=2026
 export async function GET(req: NextRequest) {
   try {

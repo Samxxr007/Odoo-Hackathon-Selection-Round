@@ -3,6 +3,8 @@ import { requireRoles } from '@/lib/authGuard'
 import { getAllLeaveRequests } from '@/lib/leave/leaveService'
 import type { LeaveStatus } from '@/types/leave'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/leave/admin?status=PENDING&userId=...
 export async function GET(req: NextRequest) {
   try {

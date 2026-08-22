@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/authGuard'
 import { getUnreadCount } from '@/lib/notifications/notificationService'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/notifications/unread-count
 export async function GET(_req: NextRequest) {
   try {

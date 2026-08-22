@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireRoles } from '@/lib/authGuard'
 import { getAdminPayroll } from '@/lib/payroll/payrollService'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/payroll/admin?month=8&year=2026
 export async function GET(req: NextRequest) {
   try {

@@ -13,7 +13,9 @@ const { Title, Text } = Typography
 
 export default function NewLeavePage() {
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const sessionResult = useSession()
+  const session = sessionResult?.data
+  const status = sessionResult?.status || 'unauthenticated'
   const [balances, setBalances] = useState<LeaveBalanceDTO[]>([])
   const [loading, setLoading] = useState(true)
 

@@ -6,6 +6,8 @@ import {
   markAllAsRead,
 } from '@/lib/notifications/notificationService'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/notifications?limit=20&unreadOnly=false
 export async function GET(req: NextRequest) {
   try {
