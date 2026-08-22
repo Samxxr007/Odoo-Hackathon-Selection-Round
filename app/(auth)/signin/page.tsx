@@ -92,6 +92,7 @@ export default function SigninPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((p) => !p)}
+                suppressHydrationWarning
                 className="focus:outline-none hover:text-[#1A1D24] transition-colors"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >

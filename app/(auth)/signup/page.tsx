@@ -245,7 +245,7 @@ export default function SignupPage() {
             error={errors.password?.message}
             leftIcon={<Lock className="h-4 w-4" />}
             rightIcon={
-              <button type="button" onClick={() => setShowPassword((p) => !p)} aria-label="Toggle">
+              <button type="button" onClick={() => setShowPassword((p) => !p)} suppressHydrationWarning aria-label="Toggle">
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             }
