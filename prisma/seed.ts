@@ -440,7 +440,7 @@ async function main() {
     for (const user of seededUsers) {
       // Special Cases for August 22 (TODAY):
       if (day === 22) {
-        if (user.id === 'emp-001' || user.id === 'emp-002' || user.id === 'emp-003' || user.id === 'emp-004' || user.id === 'emp-007') {
+        if (['emp-001', 'emp-002', 'emp-003', 'emp-004', 'emp-007'].includes(user.id)) {
           // Present and Checked in right now! 🟢
           const checkIn = new Date(`${dateStr}T09:02:15.000Z`)
           await prisma.attendance.create({
@@ -450,8 +450,8 @@ async function main() {
               date: dateObj,
               businessDate: dateStr,
               checkIn,
-              checkOut: null, // Still working right now!
-              workHoursMinutes: 320,
+              checkOut: null, // Still working
+              workHoursMinutes: 395,
               extraHoursMinutes: 0,
               status: AttendanceStatusType.PRESENT,
               isLate: false,
@@ -473,9 +473,77 @@ async function main() {
               notes: 'On Approved Leave: Design Summit',
             },
           })
+        } else if (user.id === 'emp-006') {
+          // Present - Late Check-in
+          const checkIn = new Date(`${dateStr}T09:28:00.000Z`)
+          await prisma.attendance.create({
+            data: {
+              userId: user.id,
+              employeeId: user.id,
+              date: dateObj,
+              businessDate: dateStr,
+              checkIn,
+              checkOut: null,
+              workHoursMinutes: 370,
+              extraHoursMinutes: 0,
+              status: AttendanceStatusType.PRESENT,
+              isLate: true,
+              notes: 'Traffic delay on SG Highway',
+            },
+          })
+        } else if (user.id === 'emp-008') {
+          // Present - Regular
+          const checkIn = new Date(`${dateStr}T08:55:00.000Z`)
+          await prisma.attendance.create({
+            data: {
+              userId: user.id,
+              employeeId: user.id,
+              date: dateObj,
+              businessDate: dateStr,
+              checkIn,
+              checkOut: null,
+              workHoursMinutes: 405,
+              extraHoursMinutes: 0,
+              status: AttendanceStatusType.PRESENT,
+              isLate: false,
+            },
+          })
+        } else if (user.id === 'emp-009') {
+          // Half Day Morning
+          const checkIn = new Date(`${dateStr}T09:00:00.000Z`)
+          const checkOut = new Date(`${dateStr}T13:30:00.000Z`)
+          await prisma.attendance.create({
+            data: {
+              userId: user.id,
+              employeeId: user.id,
+              date: dateObj,
+              businessDate: dateStr,
+              checkIn,
+              checkOut,
+              workHoursMinutes: 270,
+              extraHoursMinutes: 0,
+              status: AttendanceStatusType.HALF_DAY,
+              isLate: false,
+              notes: 'Half day approved for personal appointment',
+            },
+          })
         } else {
-          // Absent today 🟡
-          // No record or absent record
+          // emp-010: Present
+          const checkIn = new Date(`${dateStr}T09:10:00.000Z`)
+          await prisma.attendance.create({
+            data: {
+              userId: user.id,
+              employeeId: user.id,
+              date: dateObj,
+              businessDate: dateStr,
+              checkIn,
+              checkOut: null,
+              workHoursMinutes: 390,
+              extraHoursMinutes: 0,
+              status: AttendanceStatusType.PRESENT,
+              isLate: false,
+            },
+          })
         }
         continue
       }

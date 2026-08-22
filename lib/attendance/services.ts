@@ -278,7 +278,7 @@ export async function getAdminDailyAttendance(params: {
   const { date, search, status } = params;
 
   // Build employee filter
-  const whereUser: any = { role: 'EMPLOYEE' };
+  const whereUser: any = { isActive: true };
   if (search) {
     whereUser.OR = [
       { name: { contains: search } },
@@ -300,14 +300,27 @@ export async function getAdminDailyAttendance(params: {
   });
   const attendanceMap = new Map(attendances.map((a) => [a.employeeId, a]));
 
-  const leaves = await prisma.leave.findMany({
-    where: {
-      status: 'APPROVED',
-      startDate: { lte: date },
-      endDate: { gte: date },
-    },
-  });
-  const leaveMap = new Map(leaves.map((l) => [l.employeeId, l]));
+  const targetDateObj = new Date(`${date}T00:00:00.000Z`);
+  const [leaves, leaveReqs] = await Promise.all([
+    prisma.leave.findMany({
+      where: {
+        status: 'APPROVED',
+        startDate: { lte: date },
+        endDate: { gte: date },
+      },
+    }).catch(() => []),
+    prisma.leaveRequest.findMany({
+      where: {
+        status: 'APPROVED',
+        fromDate: { lte: targetDateObj },
+        toDate: { gte: targetDateObj },
+      },
+    }).catch(() => []),
+  ]);
+  
+  const leaveMap = new Map();
+  leaves.forEach((l) => leaveMap.set(l.employeeId, l));
+  leaveReqs.forEach((lr) => leaveMap.set(lr.userId, lr));
 
   let records = employees.map((emp) => {
     const att = attendanceMap.get(emp.id);
@@ -320,13 +333,7 @@ export async function getAdminDailyAttendance(params: {
     let extraHoursStr = '—';
     let isMissingCheckout = false;
 
-    if (isWeekend) {
-      statusDisplay = 'WEEKEND';
-    } else if (holiday?.isNonWorkingDay) {
-      statusDisplay = 'HOLIDAY';
-    } else if (activeLeave) {
-      statusDisplay = 'LEAVE';
-    } else if (att) {
+    if (att) {
       statusDisplay = att.status as any;
       checkInStr = formatTimeInTimezone(att.checkIn);
       checkOutStr = formatTimeInTimezone(att.checkOut);
@@ -335,6 +342,14 @@ export async function getAdminDailyAttendance(params: {
       if (att.checkIn && !att.checkOut) {
         isMissingCheckout = true;
       }
+    } else if (activeLeave) {
+      statusDisplay = 'LEAVE';
+    } else if (holiday?.isNonWorkingDay) {
+      statusDisplay = 'HOLIDAY';
+    } else if (isWeekend) {
+      statusDisplay = 'WEEKEND';
+    } else {
+      statusDisplay = 'ABSENT';
     }
 
     return {

@@ -6,7 +6,7 @@ import { UnifiedHeader } from '@/components/layout/UnifiedHeader';
 import { AdminFilters } from '@/components/attendance/AdminFilters';
 import { AdminAttendanceTable } from '@/components/attendance/AdminAttendanceTable';
 import { CorrectionModal } from '@/components/attendance/CorrectionModal';
-import { Users, CheckCircle2, XCircle, Umbrella, Clock, RefreshCw, AlertTriangle, Shield, Info } from 'lucide-react';
+import { Users, CheckCircle2, XCircle, Umbrella, Clock, RefreshCw, AlertTriangle, Info } from 'lucide-react';
 import { getBusinessDateString } from '@/lib/attendance/timezone';
 
 export default function AdminAttendancePage() {
@@ -88,51 +88,35 @@ export default function AdminAttendancePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F4F7FB]">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#0B0F17] transition-colors duration-200">
       <UnifiedHeader initialUser={user} />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fadeIn">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 animate-fadeIn">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-purple-100 text-purple-700 uppercase">
-                Admin Control
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[#1A1D24] tracking-tight mt-1">
-              Admin Attendance Management
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+              Attendance Management
             </h1>
-            <p className="text-sm text-[#5A687D]">
-              Review, filter, and audit company-wide employee attendance records and punch corrections.
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+              Review and manage company-wide daily attendance records and punch corrections.
             </p>
           </div>
 
           <button
             onClick={fetchAdminData}
-            className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#E5ECF2] hover:bg-[#F4F7FB] text-[#1A1D24] text-sm font-bold shadow-xs transition-colors cursor-pointer"
+            className="self-start sm:self-auto inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
-            <RefreshCw className="w-4 h-4 text-[#0077FF]" />
-            Refresh
+            <RefreshCw className="w-3.5 h-3.5 text-[#0077FF] dark:text-[#38BDF8]" />
+            <span>Refresh</span>
           </button>
-        </div>
-
-        {/* Note banner */}
-        <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 text-xs text-purple-900 flex items-start gap-3">
-          <Info className="w-5 h-5 shrink-0 mt-0.5 text-purple-600" />
-          <div className="space-y-1">
-            <p className="font-bold text-sm text-purple-950">Admin Attendance & Audit Rules</p>
-            <p className="text-purple-800 leading-relaxed">
-              Admins and HR officers can inspect real-time presence across all departments. Missing check-outs can be corrected using the <strong>Correct</strong> action, which requires a mandatory reason for the audit trail.
-            </p>
-          </div>
         </div>
 
         {/* Global Error Notice */}
         {error && (
-          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-medium flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs font-medium flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-rose-600" />
+              <AlertTriangle className="w-4 h-4 text-rose-600" />
               <span>{error}</span>
             </div>
             <button
@@ -144,46 +128,46 @@ export default function AdminAttendancePage() {
           </div>
         )}
 
-        {/* Summary Counter Cards for Admin */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-          <div className="bg-white p-5 rounded-2xl border border-[#E5ECF2] shadow-xs">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-[#8F9CAE] uppercase tracking-wider">Total Staff</span>
-              <Users className="w-4 h-4 text-[#0077FF]" />
+        {/* Summary Counter Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Staff</span>
+              <Users className="w-4 h-4 text-[#0077FF] dark:text-[#38BDF8]" />
             </div>
-            <div className="text-2xl font-black text-[#1A1D24]">{data.summary.totalEmployees}</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white">{data.summary.totalEmployees}</div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-emerald-100 shadow-xs">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">Present</span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 shadow-xs">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Present</span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <div className="text-2xl font-black text-emerald-700">{data.summary.present}</div>
+            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{data.summary.present}</div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-rose-100 shadow-xs">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-rose-800 uppercase tracking-wider">Absent</span>
-              <XCircle className="w-4 h-4 text-rose-600" />
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-rose-100 dark:border-rose-900/50 shadow-xs">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[11px] font-semibold text-rose-700 dark:text-rose-400 uppercase tracking-wider">Absent</span>
+              <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
             </div>
-            <div className="text-2xl font-black text-rose-700">{data.summary.absent}</div>
+            <div className="text-2xl font-bold text-rose-600 dark:text-rose-400">{data.summary.absent}</div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-orange-100 shadow-xs">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-orange-800 uppercase tracking-wider">Half-Day</span>
-              <Clock className="w-4 h-4 text-orange-600" />
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/50 shadow-xs">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Half-Day</span>
+              <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             </div>
-            <div className="text-2xl font-black text-orange-700">{data.summary.halfDay}</div>
+            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{data.summary.halfDay}</div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-sky-100 shadow-xs">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-sky-800 uppercase tracking-wider">On Leave</span>
-              <Umbrella className="w-4 h-4 text-sky-600" />
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-sky-100 dark:border-sky-900/50 shadow-xs">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[11px] font-semibold text-sky-700 dark:text-sky-400 uppercase tracking-wider">On Leave</span>
+              <Umbrella className="w-4 h-4 text-sky-600 dark:text-sky-400" />
             </div>
-            <div className="text-2xl font-black text-sky-700">{data.summary.leave}</div>
+            <div className="text-2xl font-bold text-sky-600 dark:text-sky-400">{data.summary.leave}</div>
           </div>
         </div>
 
