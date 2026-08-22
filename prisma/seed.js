@@ -1,9 +1,11 @@
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding Dayflow Database...');
+  const defaultPasswordHash = await bcrypt.hash('Password123!', 12);
 
   // Create Default Company
   await prisma.company.upsert({
@@ -18,11 +20,12 @@ async function main() {
   // Create Users
   const emp1 = await prisma.user.upsert({
     where: { email: 'aswin@dayflow.hr' },
-    update: { name: 'Aswin Acharya' },
+    update: { name: 'Aswin Acharya', passwordHash: defaultPasswordHash },
     create: {
       id: 'emp-001',
       loginId: 'EMP001',
       email: 'aswin@dayflow.hr',
+      passwordHash: defaultPasswordHash,
       name: 'Aswin Acharya',
       role: 'EMPLOYEE',
       department: 'Engineering',
@@ -36,11 +39,12 @@ async function main() {
 
   const emp2 = await prisma.user.upsert({
     where: { email: 'rahul@dayflow.hr' },
-    update: { name: 'Rahul Sharma' },
+    update: { name: 'Rahul Sharma', passwordHash: defaultPasswordHash },
     create: {
       id: 'emp-002',
       loginId: 'EMP002',
       email: 'rahul@dayflow.hr',
+      passwordHash: defaultPasswordHash,
       name: 'Rahul Sharma',
       role: 'EMPLOYEE',
       department: 'Product Design',
@@ -54,11 +58,12 @@ async function main() {
 
   const emp3 = await prisma.user.upsert({
     where: { email: 'priya@dayflow.hr' },
-    update: { name: 'Priya Patel' },
+    update: { name: 'Priya Patel', passwordHash: defaultPasswordHash },
     create: {
       id: 'emp-003',
       loginId: 'EMP003',
       email: 'priya@dayflow.hr',
+      passwordHash: defaultPasswordHash,
       name: 'Priya Patel',
       role: 'EMPLOYEE',
       department: 'Marketing',
@@ -72,11 +77,12 @@ async function main() {
 
   const admin = await prisma.user.upsert({
     where: { email: 'admin@dayflow.hr' },
-    update: { name: 'Sarah Connor' },
+    update: { name: 'Sarah Connor', passwordHash: defaultPasswordHash },
     create: {
       id: 'admin-001',
       loginId: 'ADM001',
       email: 'admin@dayflow.hr',
+      passwordHash: defaultPasswordHash,
       name: 'Sarah Connor',
       role: 'ADMIN',
       department: 'Human Resources',

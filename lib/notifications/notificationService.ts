@@ -15,7 +15,7 @@ export async function sendNotification(
       type,
       recipientId,
       message,
-      metadata: metadata ? (metadata as any) : undefined,
+      metadata: metadata ? (typeof metadata === 'string' ? metadata : JSON.stringify(metadata)) : null,
     },
   })
 }

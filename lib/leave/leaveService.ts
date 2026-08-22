@@ -341,24 +341,39 @@ export async function getAllLeaveRequests(
 
 // ─── DTO Mapper ───────────────────────────────────────────────────────────────
 
+function safeISOString(val: any): string {
+  if (!val) return new Date().toISOString();
+  if (val instanceof Date) return val.toISOString();
+  if (typeof val === 'string') return new Date(val).toISOString();
+  try {
+    return new Date(val).toISOString();
+  } catch {
+    return new Date().toISOString();
+  }
+}
+
 function mapToDTO(req: any): LeaveRequestDTO {
+  const from = req.fromDate || req.startDate;
+  const to = req.toDate || req.endDate;
+  const requested = req.requestedAt || req.createdAt;
+
   return {
     id: req.id,
-    userId: req.userId,
+    userId: req.userId || req.employeeId,
     userName: req.user?.name ?? '',
     userEmail: req.user?.email ?? '',
     leaveType: req.leaveType as LeaveType,
-    fromDate: req.fromDate.toISOString(),
-    toDate: req.toDate.toISOString(),
-    days: req.days,
+    fromDate: safeISOString(from),
+    toDate: safeISOString(to),
+    days: req.days ?? 1,
     status: req.status as LeaveStatus,
     remarks: req.remarks ?? undefined,
     attachmentPath: req.attachmentPath ?? undefined,
     attachmentName: req.attachmentName ?? undefined,
-    requestedAt: req.requestedAt.toISOString(),
+    requestedAt: safeISOString(requested),
     decidedById: req.decidedById ?? undefined,
     decidedByName: req.decidedBy?.name ?? undefined,
-    decidedAt: req.decidedAt?.toISOString() ?? undefined,
+    decidedAt: req.decidedAt ? safeISOString(req.decidedAt) : undefined,
     rejectionReason: req.rejectionReason ?? undefined,
   }
 }
