@@ -20,10 +20,10 @@ export default async function DashboardPage() {
   let todayAttendances: any[] = []
   let activeLeaves: any[] = []
 
-  try {
-    const todayStr = new Date().toISOString().split('T')[0]
-    const todayDate = new Date(`${todayStr}T00:00:00.000Z`)
+  const todayStr = new Date().toISOString().split('T')[0]
+  const todayDate = new Date(`${todayStr}T00:00:00.000Z`)
 
+  try {
     employees = await db.user.findMany({
       where: { isActive: true },
       orderBy: { createdAt: 'asc' },
