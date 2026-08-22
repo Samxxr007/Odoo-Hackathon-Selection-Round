@@ -99,9 +99,9 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      await createSession(user.id, user.role, user.companyId, req)
+      const token = await createSession(user.id, user.role, user.companyId, req)
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: true,
         message: 'Signed in successfully',
         user: {
@@ -116,6 +116,21 @@ export async function POST(req: NextRequest) {
         },
         redirectTo: user.mustChangePassword ? '/change-password' : '/dashboard',
       })
+
+      // Set cookie on response
+      response.cookies.set('odoo_hrms_session', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+      })
+      response.cookies.set('dayflow_user_id', user.id, {
+        httpOnly: true,
+        path: '/',
+        sameSite: 'lax',
+      })
+
+      return response
     } catch (dbError) {
       // DB unreachable — fall through to demo users
       console.warn('[Signin] DB unreachable, trying demo users:', (dbError as Error).message)

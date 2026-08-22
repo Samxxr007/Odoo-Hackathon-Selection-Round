@@ -40,7 +40,14 @@ export default function SigninPage() {
         body: JSON.stringify(data),
       })
 
-      const json = await res.json()
+      let json: any
+      try {
+        const text = await res.text()
+        json = JSON.parse(text)
+      } catch {
+        toastError('Unable to process authentication response.')
+        return
+      }
 
       if (!json.success) {
         if (json.fieldErrors) {
@@ -50,13 +57,13 @@ export default function SigninPage() {
             })
           })
         } else {
-          setError('password', { message: json.error })
+          setError('password', { message: json.error || 'Authentication failed' })
         }
         return
       }
 
       success('Welcome back!')
-      router.push(json.redirectTo ?? '/dashboard')
+      window.location.href = json.redirectTo ?? '/dashboard'
     } catch {
       toastError('Network error. Please check your connection.')
     }
