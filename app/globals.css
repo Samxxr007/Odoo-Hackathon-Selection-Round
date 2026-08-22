@@ -1,12 +1,7 @@
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────
-   Tailwind v4 Dark Mode Class Variant
-   ───────────────────────────────────────────── */
-@custom-variant dark (&:where(.dark, .dark *));
-
-/* ─────────────────────────────────────────────
-   Brand & Theme Design Tokens
+   Brand & Theme Design Tokens (Pure Clean Light Mode)
    ───────────────────────────────────────────── */
 :root {
   --color-primary: #0077FF;
@@ -17,30 +12,16 @@
   --color-absent: #EAB308;
   --color-leave: #00B7FE;
 
-  --background: #F8FAFC;
+  --background: #F4F7FB;
   --foreground: #0F172A;
   --card-bg: #FFFFFF;
   --card-border: #E2E8F0;
   --text-muted: #64748B;
-  --dayflow-bg: #F8FAFC;
+  --dayflow-bg: #F4F7FB;
   --dayflow-surface: #FFFFFF;
   --dayflow-border: #E2E8F0;
   --dayflow-text: #0F172A;
   --dayflow-muted: #64748B;
-}
-
-.dark {
-  --background: #0B0F17;
-  --foreground: #F8FAFC;
-  --card-bg: #131B2A;
-  --card-border: #1E293B;
-  --color-tint: #1E293B;
-  --text-muted: #94A3B8;
-  --dayflow-bg: #0B0F17;
-  --dayflow-surface: #131B2A;
-  --dayflow-border: #1E293B;
-  --dayflow-text: #F8FAFC;
-  --dayflow-muted: #94A3B8;
 }
 
 @theme inline {
@@ -61,84 +42,6 @@ body {
 }
 
 /* ─────────────────────────────────────────────
-   Ant Design Dark Mode Overrides
-   ───────────────────────────────────────────── */
-.dark .ant-typography {
-  color: #F8FAFC !important;
-}
-.dark .ant-typography.ant-typography-secondary {
-  color: #94A3B8 !important;
-}
-.dark .ant-table {
-  background: #131B2A !important;
-  color: #F8FAFC !important;
-}
-.dark .ant-table-thead > tr > th {
-  background: #0F172A !important;
-  color: #CBD5E1 !important;
-  border-bottom: 1px solid #1E293B !important;
-}
-.dark .ant-table-tbody > tr > td {
-  border-bottom: 1px solid #1E293B !important;
-  color: #F8FAFC !important;
-}
-.dark .ant-table-tbody > tr:hover > td {
-  background: #1E293B !important;
-}
-.dark .ant-table-placeholder .ant-empty-description {
-  color: #94A3B8 !important;
-}
-.dark .ant-card {
-  background: #131B2A !important;
-  border-color: #1E293B !important;
-  color: #F8FAFC !important;
-}
-.dark .ant-modal-content,
-.dark .ant-modal-header {
-  background: #131B2A !important;
-  color: #F8FAFC !important;
-}
-.dark .ant-modal-title {
-  color: #F8FAFC !important;
-}
-.dark .ant-input,
-.dark .ant-input-affix-wrapper,
-.dark .ant-select-selector {
-  background: #0B0F17 !important;
-  border-color: #1E293B !important;
-  color: #F8FAFC !important;
-}
-.dark .ant-select-dropdown {
-  background: #131B2A !important;
-  border: 1px solid #1E293B !important;
-}
-.dark .ant-select-item {
-  color: #F8FAFC !important;
-}
-.dark .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
-  background: #1E293B !important;
-}
-.dark .ant-pagination-item {
-  background: #131B2A !important;
-  border-color: #1E293B !important;
-}
-.dark .ant-pagination-item a {
-  color: #CBD5E1 !important;
-}
-.dark .ant-pagination-item-active {
-  border-color: #0077FF !important;
-}
-.dark .ant-pagination-item-active a {
-  color: #0077FF !important;
-}
-.dark .ant-pagination-prev .ant-pagination-item-link,
-.dark .ant-pagination-next .ant-pagination-item-link {
-  background: #131B2A !important;
-  border-color: #1E293B !important;
-  color: #CBD5E1 !important;
-}
-
-/* ─────────────────────────────────────────────
    Scrollbar
    ───────────────────────────────────────────── */
 ::-webkit-scrollbar {
@@ -151,9 +54,6 @@ body {
 ::-webkit-scrollbar-thumb {
   background: #CBD5E1;
   border-radius: 9999px;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: #334155;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
