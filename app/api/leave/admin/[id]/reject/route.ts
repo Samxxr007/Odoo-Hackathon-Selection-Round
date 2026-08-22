@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { requireRoles } from '@/lib/authGuard'
 import { rejectLeave } from '@/lib/leave/leaveService'
 
-type Params = { params: { id: string } }
+type Params = { params: Promise<{ id: string }> }
 
 const RejectSchema = z.object({
   reason: z.string().min(1, 'Rejection reason is required.').max(500),
@@ -21,7 +21,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
     }
 
-    const updated = await rejectLeave(params.id, user.id, parsed.data.reason)
+    const resolved = await params
+    const updated = await rejectLeave(resolved.id, user.id, parsed.data.reason)
     return NextResponse.json(updated)
   } catch (err: any) {
     console.error('[POST /api/leave/admin/[id]/reject]', err)

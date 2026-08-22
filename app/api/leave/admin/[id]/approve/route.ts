@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireRoles } from '@/lib/authGuard'
 import { approveLeave } from '@/lib/leave/leaveService'
 
-type Params = { params: { id: string } }
+type Params = { params: Promise<{ id: string }> }
 
 // POST /api/leave/admin/[id]/approve
 export async function POST(_req: NextRequest, { params }: Params) {
@@ -10,7 +10,8 @@ export async function POST(_req: NextRequest, { params }: Params) {
     const user = await requireRoles(['ADMIN', 'HR'])
     if (user instanceof NextResponse) return user
 
-    const updated = await approveLeave(params.id, user.id)
+    const resolved = await params
+    const updated = await approveLeave(resolved.id, user.id)
     return NextResponse.json(updated)
   } catch (err: any) {
     console.error('[POST /api/leave/admin/[id]/approve]', err)

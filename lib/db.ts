@@ -1,3 +1,4 @@
+import { PrismaClient } from '@prisma/client'
 import { 
   EmployeeProfile, 
   PrivateInfo, 
@@ -5,30 +6,45 @@ import {
   SalaryConfig, 
   DocumentRecord, 
   UserRole 
-} from './types';
+} from './types'
 
-export interface DbUserRecord {
-  id: string;
-  loginId: string;
-  passwordHash: string; // Never exposed
-  mustChangePassword: boolean;
-  role: UserRole;
-  profile: EmployeeProfile;
-  privateInfo: PrivateInfo;
-  bankDetails: BankDetails;
-  salaryConfig: SalaryConfig;
-  documents: DocumentRecord[];
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
 }
 
-// Simple salt/hash for reproducible demo/tests (deterministic & secure PBKDF2/SHA)
+export const db =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  })
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
+
+// ─────────────────────────────────────────────
+// Member 2 In-Memory Store & Helpers
+// ─────────────────────────────────────────────
+
+export interface DbUserRecord {
+  id: string
+  loginId: string
+  passwordHash: string
+  mustChangePassword: boolean
+  role: UserRole
+  profile: EmployeeProfile
+  privateInfo: PrivateInfo
+  bankDetails: BankDetails
+  salaryConfig: SalaryConfig
+  documents: DocumentRecord[]
+}
+
 export function simpleHash(str: string): string {
-  let hash = 0;
+  let hash = 0
   for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash |= 0; // Convert to 32bit integer
+    const char = str.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash |= 0
   }
-  return `sha256_${Math.abs(hash).toString(16)}_${str.length}`;
+  return `sha256_${Math.abs(hash).toString(16)}_${str.length}`
 }
 
 const initialUsers: DbUserRecord[] = [
@@ -251,7 +267,6 @@ const initialUsers: DbUserRecord[] = [
       uan: '101293847561',
       employeeCode: 'EMP-003',
     },
-    // Exact worked example: Rs 50,000 monthly wage
     salaryConfig: {
       monthlyWage: 50000,
       workingDaysPerWeek: 5,
@@ -291,7 +306,7 @@ const initialUsers: DbUserRecord[] = [
     id: 'EMP-004',
     loginId: 'EMP-004',
     passwordHash: simpleHash('Password123!'),
-    mustChangePassword: true, // First-login change password destination!
+    mustChangePassword: true,
     role: 'EMPLOYEE',
     profile: {
       id: 'EMP-004',
@@ -368,123 +383,121 @@ const initialUsers: DbUserRecord[] = [
       }
     ],
   }
-];
+]
 
-// In-memory runtime database
-let databaseUsers: DbUserRecord[] = JSON.parse(JSON.stringify(initialUsers));
+let databaseUsers: DbUserRecord[] = JSON.parse(JSON.stringify(initialUsers))
 
 export function getAllDbUsers(): DbUserRecord[] {
-  return databaseUsers;
+  return databaseUsers
 }
 
 export function getDbUserById(id: string): DbUserRecord | null {
-  return databaseUsers.find(u => u.id === id || u.loginId === id) || null;
+  return databaseUsers.find(u => u.id === id || u.loginId === id) || null
 }
 
 export function getDbUserByEmail(email: string): DbUserRecord | null {
-  return databaseUsers.find(u => u.profile.email.toLowerCase() === email.toLowerCase()) || null;
+  return databaseUsers.find(u => u.profile.email.toLowerCase() === email.toLowerCase()) || null
 }
 
 export function getEmployeeSalaryConfigFromDb(userId: string): SalaryConfig | null {
-  const user = getDbUserById(userId);
-  return user ? user.salaryConfig : null;
+  const user = getDbUserById(userId)
+  return user ? user.salaryConfig : null
 }
 
 export function updateEmployeeProfileInDb(userId: string, updates: Partial<EmployeeProfile>): DbUserRecord | null {
-  const user = getDbUserById(userId);
-  if (!user) return null;
+  const user = getDbUserById(userId)
+  if (!user) return null
 
-  // Protect immutable loginId
-  const { loginId, id, ...allowedUpdates } = updates as any;
+  const { loginId, id, ...allowedUpdates } = updates as any
   
   if (allowedUpdates.resume) {
     user.profile.resume = {
       ...user.profile.resume,
       ...allowedUpdates.resume
-    };
+    }
   }
 
   user.profile = {
     ...user.profile,
     ...allowedUpdates,
-    id: user.id, // Immutable
-    loginId: user.loginId, // Immutable
+    id: user.id,
+    loginId: user.loginId,
     resume: user.profile.resume,
-  };
+  }
 
-  return user;
+  return user
 }
 
 export function updatePrivateInfoInDb(userId: string, updates: Partial<PrivateInfo>): DbUserRecord | null {
-  const user = getDbUserById(userId);
-  if (!user) return null;
+  const user = getDbUserById(userId)
+  if (!user) return null
 
   user.privateInfo = {
     ...user.privateInfo,
     ...updates,
-  };
+  }
 
-  return user;
+  return user
 }
 
 export function updateBankDetailsInDb(userId: string, updates: Partial<BankDetails>): DbUserRecord | null {
-  const user = getDbUserById(userId);
-  if (!user) return null;
+  const user = getDbUserById(userId)
+  if (!user) return null
 
   user.bankDetails = {
     ...user.bankDetails,
     ...updates,
-    employeeCode: user.bankDetails.employeeCode, // Preserved
-  };
+    employeeCode: user.bankDetails.employeeCode,
+  }
 
-  return user;
+  return user
 }
 
 export function updateSalaryConfigInDb(userId: string, config: Partial<SalaryConfig>): DbUserRecord | null {
-  const user = getDbUserById(userId);
-  if (!user) return null;
+  const user = getDbUserById(userId)
+  if (!user) return null
 
   user.salaryConfig = {
     ...user.salaryConfig,
     ...config,
-  };
+  }
 
-  return user;
+  return user
 }
 
 export function updatePasswordInDb(userId: string, newPasswordHash: string): boolean {
-  const user = getDbUserById(userId);
-  if (!user) return false;
+  const user = getDbUserById(userId)
+  if (!user) return false
 
-  user.passwordHash = newPasswordHash;
-  user.mustChangePassword = false;
-  return true;
+  user.passwordHash = newPasswordHash
+  user.mustChangePassword = false
+  return true
 }
 
 export function addDocumentToDb(userId: string, doc: Omit<DocumentRecord, 'id'>): DocumentRecord | null {
-  const user = getDbUserById(userId);
-  if (!user) return null;
+  const user = getDbUserById(userId)
+  if (!user) return null
 
   const newDoc: DocumentRecord = {
     ...doc,
     id: `doc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-  };
+  }
 
-  user.documents.push(newDoc);
-  return newDoc;
+  user.documents.push(newDoc)
+  return newDoc
 }
 
 export function deleteDocumentFromDb(userId: string, docId: string): boolean {
-  const user = getDbUserById(userId);
-  if (!user) return false;
+  const user = getDbUserById(userId)
+  if (!user) return false
 
-  const index = user.documents.findIndex(d => d.id === docId);
-  if (index === -1) return false;
+  const index = user.documents.findIndex(d => d.id === docId)
+  if (index === -1) return false
 
-  user.documents.splice(index, 1);
-  return true;
+  user.documents.splice(index, 1)
+  return true
 }
 
 export function resetDatabase(): void {
-  databaseUsers = JSON.parse(JSON.stringify(initialUsers));
+  databaseUsers = JSON.parse(JSON.stringify(initialUsers))
 }

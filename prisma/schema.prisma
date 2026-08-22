@@ -1,95 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+  HR
 }
+
+enum AttendanceStatusType {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  ON_LEAVE
+  UNKNOWN
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// ─────────────────────────────────────────────
+// Company
+// ─────────────────────────────────────────────
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  logoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employees       User[]
+  leaveRequests   LeaveRequest[]
+  yearlySerials   YearlySerial[]
+}
+
+// ─────────────────────────────────────────────
+// User
+// ─────────────────────────────────────────────
 
 model User {
-  id                   String       @id @default(uuid())
-  email                String       @unique
-  name                 String
-  password             String?      @default("password123")
-  role                 String       @default("EMPLOYEE") // EMPLOYEE | ADMIN | HR
-  department           String?
-  designation          String?
-  joiningDate          DateTime?
-  isActive             Boolean      @default(true)
-  avatarUrl            String?
-  shiftStartTime       String       @default("09:00") // HH:mm format
-  shiftDurationMinutes Int          @default(480)    // 8 hours (480 minutes)
-  gracePeriodMinutes   Int          @default(15)     // 15 minutes grace period
-  createdAt            DateTime     @default(now())
-  updatedAt            DateTime     @updatedAt
+  id           String   @id @default(cuid())
+  loginId      String   @unique
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         Role     @default(EMPLOYEE)
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  attendances          Attendance[]
-  leaves               Leave[]
+  // Profile
+  department       String?
+  designation      String?
+  joiningDate      DateTime?
+  location         String?
+  managerId        String?
+  manager          User?    @relation("EmployeeManager", fields: [managerId], references: [id])
+  subordinates     User[]   @relation("EmployeeManager")
+  profilePhotoUrl  String?
+  avatarUrl        String?
+  isActive         Boolean  @default(true)
 
-  // Member 4 relations
-  leaveAllocations     LeaveAllocation[]
-  leaveRequests        LeaveRequest[]    @relation("LeaveRequests")
-  leaveDecisions       LeaveRequest[]    @relation("LeaveDecisions")
-  notifications        Notification[]
+  // Attendance shift settings
+  shiftStartTime       String   @default("09:00")
+  shiftDurationMinutes Int      @default(480)
+  gracePeriodMinutes   Int      @default(15)
+
+  // Auth / Security
+  mustChangePassword        Boolean  @default(false)
+  emailVerified             Boolean  @default(false)
+  verificationToken         String?  @unique
+  verificationTokenExpiry   DateTime?
+
+  // Tracking
+  yearlySerial  Int?
+  joiningYear   Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions         Session[]
+  attendances      Attendance[]
+  leaveAllocations LeaveAllocation[]
+  leaveRequests    LeaveRequest[]    @relation("LeaveRequests")
+  leaveDecisions   LeaveRequest[]    @relation("LeaveDecisions")
+  notifications    Notification[]
 }
 
+// ─────────────────────────────────────────────
+// Session
+// ─────────────────────────────────────────────
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+}
+
+// ─────────────────────────────────────────────
+// Yearly Serial (for Employee ID generation)
+// ─────────────────────────────────────────────
+
+model YearlySerial {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  year      Int
+  lastSerial Int    @default(0)
+
+  @@unique([companyId, year])
+}
+
+// ─────────────────────────────────────────────
+// Attendance
+// ─────────────────────────────────────────────
+
 model Attendance {
-  id                String    @id @default(uuid())
-  employeeId        String
-  employee          User      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  businessDate      String    // YYYY-MM-DD string in company timezone
-  checkIn           DateTime  // UTC timestamp
-  checkOut          DateTime? // UTC timestamp
-  workHoursMinutes  Int?      // Duration in minutes
-  extraHoursMinutes Int?      // Overtime in minutes
-  status            String    @default("PRESENT") // PRESENT | ABSENT | HALF_DAY | LEAVE
-  isLate            Boolean   @default(false)
-  isCorrected       Boolean   @default(false)
+  id                String              @id @default(cuid())
+  userId            String?
+  employeeId        String?
+  user              User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date              DateTime?           @db.Date
+  businessDate      String?
+  status            AttendanceStatusType @default(UNKNOWN)
+  checkIn           DateTime?
+  checkOut          DateTime?
+  workHoursMinutes  Int?
+  extraHoursMinutes Int?
+  isLate            Boolean             @default(false)
+  isCorrected       Boolean             @default(false)
   correctedBy       String?
   correctedAt       DateTime?
   correctionReason  String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  notes             String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 
+  @@unique([userId, date])
   @@unique([employeeId, businessDate], name: "unique_employee_daily_attendance")
   @@index([employeeId, businessDate])
-  @@index([businessDate])
-  @@index([status])
 }
 
+// ─────────────────────────────────────────────
+// Leave (Member 3)
+// ─────────────────────────────────────────────
+
 model Leave {
-  id          String   @id @default(uuid())
-  employeeId  String
-  employee    User     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  startDate   String   // YYYY-MM-DD
-  endDate     String   // YYYY-MM-DD
-  type        String   @default("PAID") // PAID | UNPAID | SICK
-  status      String   @default("PENDING") // APPROVED | PENDING | REJECTED
+  id          String   @id @default(cuid())
+  employeeId  String?
+  startDate   String
+  endDate     String
+  type        String   @default("PAID")
+  status      String   @default("PENDING")
   reason      String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@index([employeeId, startDate, endDate])
-}
-
-model Holiday {
-  id              String   @id @default(uuid())
-  date            String   @unique // YYYY-MM-DD
-  name            String
-  isNonWorkingDay Boolean  @default(true)
-  createdAt       DateTime @default(now())
+  @@index([employeeId])
 }
 
 // ─────────────────────────────────────────────
-// Member 4 — Leave, Allocation & Notification Models
+// LeaveAllocation (Member 4)
 // ─────────────────────────────────────────────
 
 model LeaveAllocation {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  leaveType String   // PAID_TIME_OFF | SICK_LEAVE | UNPAID_LEAVE
+  leaveType String
   year      Int
   totalDays Float
 
@@ -100,32 +197,53 @@ model LeaveAllocation {
   @@index([userId, year])
 }
 
+// ─────────────────────────────────────────────
+// LeaveRequest (Member 1 & 4)
+// ─────────────────────────────────────────────
+
 model LeaveRequest {
-  id              String    @id @default(uuid())
+  id              String      @id @default(cuid())
   userId          String
-  user            User      @relation("LeaveRequests", fields: [userId], references: [id], onDelete: Cascade)
-  leaveType       String    // PAID_TIME_OFF | SICK_LEAVE | UNPAID_LEAVE
-  fromDate        DateTime
-  toDate          DateTime
-  days            Float
-  status          String    @default("PENDING") // PENDING | APPROVED | REJECTED
-  remarks         String?   @db.Text
+  user            User        @relation("LeaveRequests", fields: [userId], references: [id], onDelete: Cascade)
+  companyId       String?
+  company         Company?    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  startDate       DateTime?   @db.Date
+  endDate         DateTime?   @db.Date
+  fromDate        DateTime?
+  toDate          DateTime?
+  days            Float?
+  leaveType       String      @default("ANNUAL")
+  reason          String?
+  remarks         String?     @db.Text
   attachmentPath  String?
   attachmentName  String?
-
-  requestedAt     DateTime  @default(now())
+  status          LeaveStatus @default(PENDING)
+  reviewedBy      String?
+  reviewedAt      DateTime?
   decidedById     String?
-  decidedBy       User?     @relation("LeaveDecisions", fields: [decidedById], references: [id])
+  decidedBy       User?       @relation("LeaveDecisions", fields: [decidedById], references: [id])
   decidedAt       DateTime?
-  rejectionReason String?   @db.Text
+  rejectionReason String?     @db.Text
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
-  @@index([userId, status])
-  @@index([fromDate, toDate])
-  @@index([userId, fromDate, toDate])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────
+// Holiday
+// ─────────────────────────────────────────────
+
+model Holiday {
+  id              String   @id @default(cuid())
+  date            String   @unique
+  name            String
+  isNonWorkingDay Boolean  @default(true)
+  createdAt       DateTime @default(now())
 }
 
 model PublicHoliday {
-  id   String   @id @default(uuid())
+  id   String   @id @default(cuid())
   name String
   date DateTime @unique
   year Int
@@ -133,9 +251,13 @@ model PublicHoliday {
   @@index([year])
 }
 
+// ─────────────────────────────────────────────
+// Notification
+// ─────────────────────────────────────────────
+
 model Notification {
-  id          String    @id @default(uuid())
-  type        String    // LEAVE_SUBMITTED | LEAVE_APPROVED | LEAVE_REJECTED | LEAVE_PENDING_ADMIN | PASSWORD_RESET
+  id          String    @id @default(cuid())
+  type        String
   recipientId String
   recipient   User      @relation(fields: [recipientId], references: [id], onDelete: Cascade)
   message     String    @db.Text

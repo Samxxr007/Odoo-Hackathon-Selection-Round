@@ -17,8 +17,8 @@ export interface SessionUser {
  */
 export async function getAuthUser(): Promise<SessionUser | NextResponse> {
   try {
-    const reqHeaders = headers()
-    const reqCookies = cookies()
+    const reqHeaders = await headers()
+    const reqCookies = await cookies()
 
     const userId =
       reqHeaders.get('x-user-id') ||

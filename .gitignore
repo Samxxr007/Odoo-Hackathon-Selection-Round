@@ -1,37 +1,33 @@
 # dependencies
-/node_modules
-/.pnpm-store
+node_modules/
+.pnp
+.pnp.*
 
-# next.js build output
-/.next/
-/out/
-tsconfig.tsbuildinfo
+# Next.js
+.next/
+out/
+build/
+dist/
 
-# production
-/build
+# Environment
+.env
+.env*.local
+!.env.example
 
-# debug
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
-# local env files
-.env
-.env*.local
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# SQLite Database
+# Database & Uploads
 prisma/dev.db
 prisma/dev.db-journal
 
-# IDEs & OS files
+# IDE & OS
 .DS_Store
 *.pem
-.idea/
 .vscode/
+.idea/
+*.tsbuildinfo
+next-env.d.ts
