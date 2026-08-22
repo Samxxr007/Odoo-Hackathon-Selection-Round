@@ -79,7 +79,7 @@ export default function LeavePage() {
           />
 
           {/* Request History */}
-          <div className="bg-white p-4 sm:p-6 rounded-xl border border-gray-100 shadow-sm space-y-4">
+          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-5 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
             <div className="flex justify-between items-center">
               <div>
                 <Title level={4} className="!mb-0">

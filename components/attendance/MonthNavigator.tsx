@@ -26,28 +26,28 @@ export const MonthNavigator: React.FC<MonthNavigatorProps> = ({
   };
 
   return (
-    <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-dayflow-border shadow-2xs">
+    <div className="flex items-center gap-2 bg-white dark:bg-slate-900 px-3.5 py-2 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
       <button
         onClick={handlePrev}
-        className="p-1.5 rounded-lg hover:bg-dayflow-bg text-dayflow-muted hover:text-dayflow-text transition-colors"
+        className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
         title="Previous Month"
       >
-        <ChevronLeft className="w-5 h-5" />
+        <ChevronLeft className="w-4 h-4" />
       </button>
 
       <div className="flex items-center gap-2 px-2">
-        <Calendar className="w-4 h-4 text-dayflow-primary" />
-        <span className="text-sm font-bold text-dayflow-text tracking-tight min-w-[120px] text-center">
+        <Calendar className="w-4 h-4 text-[#0077FF] dark:text-[#38BDF8]" />
+        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight min-w-[120px] text-center">
           {format(date, 'MMMM yyyy')}
         </span>
       </div>
 
       <button
         onClick={handleNext}
-        className="p-1.5 rounded-lg hover:bg-dayflow-bg text-dayflow-muted hover:text-dayflow-text transition-colors"
+        className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
         title="Next Month"
       >
-        <ChevronRight className="w-5 h-5" />
+        <ChevronRight className="w-4 h-4" />
       </button>
     </div>
   );

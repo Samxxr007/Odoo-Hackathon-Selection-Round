@@ -51,42 +51,40 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fadeIn"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn"
         onClick={onClose}
       />
 
       {/* Panel */}
       <div
         className={cn(
-          'relative w-full bg-white rounded-2xl shadow-2xl animate-fadeIn',
-          'border border-[#E5ECF2] overflow-hidden',
+          'relative w-full rounded-3xl shadow-2xl animate-scaleIn',
+          'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 overflow-hidden',
           sizeStyles[size],
           className
         )}
       >
         {/* Header */}
-        <div className="flex items-start justify-between px-6 pt-6 pb-4 border-b border-[#E5ECF2]">
+        <div className="flex items-start justify-between px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
-            <h2 id="modal-title" className="text-lg font-semibold text-[#1A1D24]">
+            <h2 id="modal-title" className="text-xl font-bold text-slate-900 dark:text-white">
               {title}
             </h2>
             {description && (
-              <p className="mt-1 text-sm text-[#8F9CAE]">{description}</p>
+              <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">{description}</p>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 rounded-lg ml-4 flex-shrink-0"
+          <button
             onClick={onClose}
             aria-label="Close modal"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
-            <X className="h-4 w-4" />
-          </Button>
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto max-h-[calc(90vh-120px)]">{children}</div>
+        <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-6">{children}</div>
       </div>
     </div>
   )
