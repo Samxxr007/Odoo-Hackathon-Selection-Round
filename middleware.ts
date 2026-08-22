@@ -31,15 +31,20 @@ export async function middleware(req: NextRequest) {
     (route) => pathname === route || pathname.startsWith(route + '/')
   )
 
+  // Try real JWT session first
   const session = await getSessionFromRequest(req)
 
+  // Fallback: accept demo cookie (dayflow_user_id) as a valid session marker
+  const demoUserId = req.cookies.get('dayflow_user_id')?.value
+  const isAuthenticated = !!session || !!demoUserId
+
   // If user is authenticated and tries to access auth pages → redirect to dashboard
-  if (session && AUTH_ONLY_ROUTES.some((r) => pathname === r || pathname.startsWith(r + '/'))) {
+  if (isAuthenticated && AUTH_ONLY_ROUTES.some((r) => pathname === r || pathname.startsWith(r + '/'))) {
     return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 
   // If route requires auth and no session → redirect to signin
-  if (!isPublicRoute && !session) {
+  if (!isPublicRoute && !isAuthenticated) {
     const signinUrl = new URL('/signin', req.url)
     signinUrl.searchParams.set('callbackUrl', pathname)
     return NextResponse.redirect(signinUrl)
@@ -52,7 +57,14 @@ export async function middleware(req: NextRequest) {
     requestHeaders.set('x-user-role', session.role)
     requestHeaders.set('x-company-id', session.companyId)
     requestHeaders.set('x-session-id', session.sessionId)
+    return NextResponse.next({ request: { headers: requestHeaders } })
+  }
 
+  // Demo mode: pass demo user id via header
+  if (demoUserId) {
+    const requestHeaders = new Headers(req.headers)
+    requestHeaders.set('x-user-id', demoUserId)
+    requestHeaders.set('x-dev-user-id', demoUserId)
     return NextResponse.next({ request: { headers: requestHeaders } })
   }
 
