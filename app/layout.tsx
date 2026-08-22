@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'HRMS — Human Resource Management System',
-  description: 'Modern HRMS built for teams',
+  description: 'Production-quality HRMS platform for modern teams',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
