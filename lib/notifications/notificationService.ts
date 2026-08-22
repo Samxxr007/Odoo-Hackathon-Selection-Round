@@ -51,7 +51,7 @@ export async function getNotifications(
     type: n.type as NotificationType,
     recipientId: n.recipientId,
     message: n.message,
-    metadata: (n.metadata as Record<string, unknown>) ?? undefined,
+    metadata: n.metadata ? (typeof n.metadata === 'string' ? (JSON.parse(n.metadata) as Record<string, unknown>) : (n.metadata as unknown as Record<string, unknown>)) : undefined,
     createdAt: n.createdAt.toISOString(),
     readAt: n.readAt?.toISOString() ?? null,
   }))

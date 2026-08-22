@@ -1,17 +1,24 @@
 import { NextResponse } from 'next/server'
 import type { AuthUser } from '@/types'
-import { Role } from '@prisma/client'
+
+export const Role = {
+  ADMIN: 'ADMIN',
+  EMPLOYEE: 'EMPLOYEE',
+  HR: 'HR',
+} as const
+
+export type RoleType = 'ADMIN' | 'EMPLOYEE' | 'HR'
 
 // ─────────────────────────────────────────────
 // Role checks
 // ─────────────────────────────────────────────
 
 export function isAdmin(user: AuthUser): boolean {
-  return user.role === Role.ADMIN
+  return user.role === 'ADMIN' || user.role === 'HR'
 }
 
 export function isEmployee(user: AuthUser): boolean {
-  return user.role === Role.EMPLOYEE
+  return user.role === 'EMPLOYEE'
 }
 
 /**
@@ -20,7 +27,7 @@ export function isEmployee(user: AuthUser): boolean {
  */
 export function requireRole(
   user: AuthUser,
-  allowedRoles: Role[]
+  allowedRoles: string[]
 ): NextResponse | null {
   if (!allowedRoles.includes(user.role)) {
     return NextResponse.json(
@@ -33,63 +40,65 @@ export function requireRole(
 
 /**
  * Check if the actor can manage (create/edit/delete) an employee.
- * Only Admin can manage employees.
+ * Only Admin/HR can manage employees.
  */
 export function canManageEmployees(actor: AuthUser): boolean {
-  return actor.role === Role.ADMIN
+  return actor.role === 'ADMIN' || actor.role === 'HR'
 }
 
 /**
  * Check if actor can view the full profile of a target user.
- * - Admins can view all profiles
+ * - Admins/HR can view all profiles
  * - Employees can only view their own full profile
  */
 export function canViewFullProfile(actor: AuthUser, targetUserId: string): boolean {
-  if (actor.role === Role.ADMIN) return true
+  if (actor.role === 'ADMIN' || actor.role === 'HR') return true
   return actor.id === targetUserId
 }
 
 /**
  * Check if actor can edit a target user's profile.
- * - Admins can edit any profile
+ * - Admins/HR can edit any profile
  * - Employees can only edit their own profile (limited fields)
  */
 export function canEditProfile(actor: AuthUser, targetUserId: string): boolean {
-  if (actor.role === Role.ADMIN) return true
+  if (actor.role === 'ADMIN' || actor.role === 'HR') return true
   return actor.id === targetUserId
 }
 
 /**
  * Check if actor can view salary/sensitive financial data.
- * Only Admin can access salary APIs.
+ * Admin/HR can access salary APIs.
  */
 export function canViewSalary(actor: AuthUser, targetUserId: string): boolean {
-  return actor.role === Role.ADMIN
+  if (actor.role === 'ADMIN' || actor.role === 'HR') return true
+  return actor.id === targetUserId
 }
 
 /**
  * Check if actor can approve or reject leave requests.
- * Only Admin can approve leave.
+ * Admin/HR can approve leave.
  */
 export function canApproveLeave(actor: AuthUser): boolean {
-  return actor.role === Role.ADMIN
+  return actor.role === 'ADMIN' || actor.role === 'HR'
 }
 
 /**
  * Check if actor can modify attendance records.
- * Only Admin can modify another employee's attendance.
+ * Admin/HR can modify another employee's attendance.
  */
 export function canModifyAttendance(actor: AuthUser, targetUserId: string): boolean {
-  if (actor.role === Role.ADMIN) return true
+  if (actor.role === 'ADMIN' || actor.role === 'HR') return true
   // Employees can only modify their own check-in/check-out
   return actor.id === targetUserId
 }
 
 /**
- * Check if actor's company matches the target company.
+ * Check if actor's company matches the target company or target user.
  * Prevents cross-company data access.
  */
-export function isSameCompany(actor: AuthUser, targetCompanyId: string): boolean {
+export function isSameCompany(actor: AuthUser, target: string | { companyId: string }): boolean {
+  const targetCompanyId = typeof target === 'string' ? target : target.companyId
   return actor.companyId === targetCompanyId
 }
 

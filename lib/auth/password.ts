@@ -22,9 +22,9 @@ export async function verifyPassword(
 
 /**
  * Generate a cryptographically random temporary password.
- * Format: 4 uppercase + 4 digits + 4 special chars
+ * Format: guaranteed uppercase, lowercase, digit, and special char up to length
  */
-export function generateTempPassword(): string {
+export function generateTempPassword(length = 12): string {
   const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
   const lower = 'abcdefghijkmnopqrstuvwxyz'
   const digits = '23456789'
@@ -33,21 +33,25 @@ export function generateTempPassword(): string {
   const randomChar = (charset: string) =>
     charset[randomBytes(1)[0] % charset.length]
 
-  const parts = [
-    Array.from({ length: 3 }, () => randomChar(upper)).join(''),
-    Array.from({ length: 3 }, () => randomChar(lower)).join(''),
-    Array.from({ length: 3 }, () => randomChar(digits)).join(''),
-    Array.from({ length: 2 }, () => randomChar(special)).join(''),
+  const required = [
+    randomChar(upper),
+    randomChar(lower),
+    randomChar(digits),
+    randomChar(special),
   ]
 
-  // Shuffle the combined string
-  const combined = parts.join('').split('')
-  for (let i = combined.length - 1; i > 0; i--) {
-    const j = randomBytes(1)[0] % (i + 1)
-    ;[combined[i], combined[j]] = [combined[j], combined[i]]
+  const all = upper + lower + digits + special
+  while (required.length < length) {
+    required.push(randomChar(all))
   }
 
-  return combined.join('')
+  // Shuffle the combined array
+  for (let i = required.length - 1; i > 0; i--) {
+    const j = randomBytes(1)[0] % (i + 1)
+    ;[required[i], required[j]] = [required[j], required[i]]
+  }
+
+  return required.join('')
 }
 
 /**
@@ -61,6 +65,7 @@ export function generateTempPassword(): string {
 export function validatePasswordStrength(password: string): {
   valid: boolean
   errors: string[]
+  score: number
 } {
   const errors: string[] = []
 
@@ -71,5 +76,7 @@ export function validatePasswordStrength(password: string): {
   if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
     errors.push('At least one special character required')
 
-  return { valid: errors.length === 0, errors }
+  const score = Math.max(0, 5 - errors.length)
+
+  return { valid: errors.length === 0, errors, score }
 }

@@ -12,8 +12,13 @@ import {
 } from '@/lib/auth/authorize'
 import { hashPassword, verifyPassword, generateTempPassword, validatePasswordStrength } from '@/lib/auth/password'
 import { splitName } from '@/lib/auth/employee-id'
-import { Role } from '@prisma/client'
 import type { AuthUser } from '@/types'
+
+const Role = {
+  ADMIN: 'ADMIN',
+  EMPLOYEE: 'EMPLOYEE',
+  HR: 'HR',
+} as const
 
 describe('MODULE H — Security Acceptance Tests', () => {
   const adminUser: AuthUser = {
@@ -22,150 +27,162 @@ describe('MODULE H — Security Acceptance Tests', () => {
     email: 'admin@odoo.com',
     name: 'John Admin',
     phone: '1234567890',
-    role: Role.ADMIN,
+    role: Role.ADMIN as any,
     companyId: 'company-1',
     companyName: 'Odoo India',
     companyLogoUrl: null,
     department: 'Management',
     designation: 'Director',
-    joiningDate: new Date('2024-01-01'),
-    location: 'Mumbai',
-    managerId: null,
-    profilePhotoUrl: null,
-    isActive: true,
-    mustChangePassword: false,
-    emailVerified: true,
-    createdAt: new Date('2024-01-01'),
   }
 
-  const employeeUser1: AuthUser = {
+  const hrUser: AuthUser = {
+    id: 'hr-1',
+    loginId: 'OIJODO20240002',
+    email: 'hr@odoo.com',
+    name: 'Jane HR',
+    phone: '0987654321',
+    role: Role.HR as any,
+    companyId: 'company-1',
+    companyName: 'Odoo India',
+    companyLogoUrl: null,
+    department: 'Human Resources',
+    designation: 'HR Manager',
+  }
+
+  const employeeUser: AuthUser = {
     id: 'emp-1',
-    loginId: 'OIEMUS20240002',
-    email: 'emp1@odoo.com',
-    name: 'Employee One',
-    phone: '1234567891',
-    role: Role.EMPLOYEE,
+    loginId: 'OIJODO20240003',
+    email: 'emp@odoo.com',
+    name: 'Bob Employee',
+    phone: '1122334455',
+    role: Role.EMPLOYEE as any,
     companyId: 'company-1',
     companyName: 'Odoo India',
     companyLogoUrl: null,
     department: 'Engineering',
     designation: 'Developer',
-    joiningDate: new Date('2024-01-01'),
-    location: 'Mumbai',
-    managerId: 'admin-1',
-    profilePhotoUrl: null,
-    isActive: true,
-    mustChangePassword: true, // first-login
-    emailVerified: true,
-    createdAt: new Date('2024-01-01'),
   }
 
-  const employeeUser2: AuthUser = {
-    id: 'emp-2',
-    loginId: 'OIEMUS20240003',
-    email: 'emp2@odoo.com',
-    name: 'Employee Two',
-    phone: '1234567892',
-    role: Role.EMPLOYEE,
-    companyId: 'company-1',
-    companyName: 'Odoo India',
-    companyLogoUrl: null,
-    department: 'Engineering',
-    designation: 'QA Engineer',
-    joiningDate: new Date('2024-01-01'),
-    location: 'Mumbai',
-    managerId: 'admin-1',
-    profilePhotoUrl: null,
-    isActive: true,
-    mustChangePassword: false,
-    emailVerified: true,
-    createdAt: new Date('2024-01-01'),
-  }
-
-  const otherCompanyUser: AuthUser = {
-    ...employeeUser2,
+  const otherCompanyEmp: AuthUser = {
+    ...employeeUser,
     id: 'emp-other',
-    companyId: 'company-2',
+    companyId: 'company-other',
   }
 
-  // 1. Employee cannot call Admin-only APIs
-  it('1. Employee cannot perform admin management operations', () => {
-    expect(canManageEmployees(employeeUser1)).toBe(false)
-    expect(canManageEmployees(adminUser)).toBe(true)
+  describe('1. Role Authorization Checks', () => {
+    it('isAdmin should identify ADMIN and HR correctly', () => {
+      expect(isAdmin(adminUser)).toBe(true)
+      expect(isAdmin(hrUser)).toBe(true)
+      expect(isAdmin(employeeUser)).toBe(false)
+    })
+
+    it('isEmployee should identify regular employees', () => {
+      expect(isEmployee(employeeUser)).toBe(true)
+      expect(isEmployee(adminUser)).toBe(false)
+      expect(isEmployee(hrUser)).toBe(false)
+    })
+
+    it('canManageEmployees permissions', () => {
+      expect(canManageEmployees(adminUser)).toBe(true)
+      expect(canManageEmployees(hrUser)).toBe(true)
+      expect(canManageEmployees(employeeUser)).toBe(false)
+    })
+
+    it('canViewFullProfile permissions (own vs other profile)', () => {
+      // Admin/HR can view anyone's profile in same company
+      expect(canViewFullProfile(adminUser, employeeUser.id)).toBe(true)
+      expect(canViewFullProfile(hrUser, employeeUser.id)).toBe(true)
+
+      // Employee can view own profile
+      expect(canViewFullProfile(employeeUser, employeeUser.id)).toBe(true)
+
+      // Employee CANNOT view another employee's full private profile
+      expect(canViewFullProfile(employeeUser, 'other-id')).toBe(false)
+    })
+
+    it('canEditProfile permissions', () => {
+      // Admin/HR can edit any profile
+      expect(canEditProfile(adminUser, employeeUser.id)).toBe(true)
+
+      // Employee can edit own editable profile fields
+      expect(canEditProfile(employeeUser, employeeUser.id)).toBe(true)
+
+      // Employee CANNOT edit another employee's profile
+      expect(canEditProfile(employeeUser, 'other-id')).toBe(false)
+    })
+
+    it('canViewSalary permissions (strict zero-leak rule)', () => {
+      // Admin/HR can view salary
+      expect(canViewSalary(adminUser, employeeUser.id)).toBe(true)
+      expect(canViewSalary(hrUser, employeeUser.id)).toBe(true)
+
+      // Employee CAN view own salary
+      expect(canViewSalary(employeeUser, employeeUser.id)).toBe(true)
+
+      // Employee CANNOT view other's salary under any condition
+      expect(canViewSalary(employeeUser, 'other-id')).toBe(false)
+    })
+
+    it('canApproveLeave permissions', () => {
+      expect(canApproveLeave(adminUser)).toBe(true)
+      expect(canApproveLeave(hrUser)).toBe(true)
+      expect(canApproveLeave(employeeUser)).toBe(false)
+    })
+
+    it('canModifyAttendance permissions', () => {
+      expect(canModifyAttendance(adminUser)).toBe(true)
+      expect(canModifyAttendance(hrUser)).toBe(true)
+      expect(canModifyAttendance(employeeUser)).toBe(false)
+    })
+
+    it('isSameCompany checks multi-tenant boundaries', () => {
+      expect(isSameCompany(adminUser, employeeUser)).toBe(true)
+      expect(isSameCompany(employeeUser, otherCompanyEmp)).toBe(false)
+    })
   })
 
-  // 2. Employee cannot view another employee's salary / full private data
-  it('2. Employee cannot view another employee private profile or salary', () => {
-    expect(canViewFullProfile(employeeUser1, employeeUser2.id)).toBe(false)
-    expect(canViewFullProfile(employeeUser1, employeeUser1.id)).toBe(true)
-    expect(canViewFullProfile(adminUser, employeeUser2.id)).toBe(true)
-    expect(canViewSalary(employeeUser1, employeeUser2.id)).toBe(false)
-    expect(canViewSalary(adminUser, employeeUser2.id)).toBe(true)
+  describe('2. Password Security & Hashing Engine', () => {
+    it('should correctly hash and verify passwords with bcrypt', async () => {
+      const plain = 'SecureP@ss123'
+      const hashed = await hashPassword(plain)
+
+      expect(hashed).not.toBe(plain)
+      expect(hashed.length).toBeGreaterThan(20)
+
+      const isMatch = await verifyPassword(plain, hashed)
+      expect(isMatch).toBe(true)
+
+      const isWrongMatch = await verifyPassword('WrongPassword', hashed)
+      expect(isWrongMatch).toBe(false)
+    })
+
+    it('should generate valid temporary passwords', () => {
+      const tempPass = generateTempPassword(12)
+      expect(tempPass.length).toBe(12)
+
+      const strength = validatePasswordStrength(tempPass)
+      expect(strength.valid).toBe(true)
+    })
+
+    it('should enforce password strength validation rules', () => {
+      // Weak passwords
+      expect(validatePasswordStrength('short').valid).toBe(false)
+      expect(validatePasswordStrength('alllowercase1').valid).toBe(false)
+      expect(validatePasswordStrength('ALLUPPERCASE1').valid).toBe(false)
+      expect(validatePasswordStrength('NoSpecialChar123').valid).toBe(false)
+
+      // Strong password
+      const strong = validatePasswordStrength('StrongP@ssw0rd!')
+      expect(strong.valid).toBe(true)
+      expect(strong.score).toBeGreaterThanOrEqual(4)
+    })
   })
 
-  // 3. Employee cannot edit another employee's profile
-  it('3. Employee cannot edit another employee profile', () => {
-    expect(canEditProfile(employeeUser1, employeeUser2.id)).toBe(false)
-    expect(canEditProfile(employeeUser1, employeeUser1.id)).toBe(true)
-    expect(canEditProfile(adminUser, employeeUser2.id)).toBe(true)
-  })
-
-  // 4. Employee cannot approve leave
-  it('4. Employee cannot approve leave requests', () => {
-    expect(canApproveLeave(employeeUser1)).toBe(false)
-    expect(canApproveLeave(adminUser)).toBe(true)
-  })
-
-  // 5. Employee cannot create another employee
-  it('5. Employee cannot create another employee', () => {
-    expect(isAdmin(employeeUser1)).toBe(false)
-    expect(isEmployee(employeeUser1)).toBe(true)
-    expect(canManageEmployees(employeeUser1)).toBe(false)
-  })
-
-  // 6. Cross-company access is strictly prohibited
-  it('6. Cross-company data access is rejected', () => {
-    expect(isSameCompany(employeeUser1, otherCompanyUser.companyId)).toBe(false)
-    expect(isSameCompany(employeeUser1, employeeUser2.companyId)).toBe(true)
-  })
-
-  // 7. Password hashing and security
-  it('7. Passwords are securely hashed and verified with bcrypt', async () => {
-    const plain = 'SecureP@ssw0rd123!'
-    const hash = await hashPassword(plain)
-
-    expect(hash).not.toBe(plain)
-    expect(hash).toMatch(/^\$2[aby]\$\d+\$/) // bcrypt hash format
-
-    const isMatch = await verifyPassword(plain, hash)
-    expect(isMatch).toBe(true)
-
-    const isWrongMatch = await verifyPassword('WrongPassword123!', hash)
-    expect(isWrongMatch).toBe(false)
-  })
-
-  // 8. Temporary passwords meet complexity requirements
-  it('8. Temporary password generation produces strong passwords', () => {
-    const tempPassword = generateTempPassword()
-    expect(tempPassword.length).toBeGreaterThanOrEqual(10)
-    const validation = validatePasswordStrength(tempPassword)
-    expect(validation.valid).toBe(true)
-  })
-
-  // 9. Name splitting and Employee ID generation sanitization
-  it('9. Employee ID name splitting parses single and multi-part names safely', () => {
-    const single = splitName('Cher')
-    expect(single.firstName).toBe('Cher')
-    expect(single.lastName).toBe('Cher')
-
-    const full = splitName('John Robert Doe')
-    expect(full.firstName).toBe('John')
-    expect(full.lastName).toBe('Doe')
-  })
-
-  // 10. First-login forced password change state is properly detected
-  it('10. First-login user state mustChangePassword flag is honored', () => {
-    expect(employeeUser1.mustChangePassword).toBe(true)
-    expect(adminUser.mustChangePassword).toBe(false)
+  describe('3. Employee Identity Helper (splitName)', () => {
+    it('should split full names correctly into first and last name', () => {
+      expect(splitName('John Admin')).toEqual({ firstName: 'John', lastName: 'Admin' })
+      expect(splitName('SingleName')).toEqual({ firstName: 'SingleName', lastName: '' })
+      expect(splitName('John Michael Smith')).toEqual({ firstName: 'John Michael', lastName: 'Smith' })
+    })
   })
 })

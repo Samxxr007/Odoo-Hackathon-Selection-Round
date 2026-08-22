@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -139,7 +139,7 @@ model Attendance {
   userId            String?
   employeeId        String?
   user              User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date              DateTime?           @db.Date
+  date              DateTime?
   businessDate      String?
   status            AttendanceStatusType @default(UNKNOWN)
   checkIn           DateTime?
@@ -207,14 +207,14 @@ model LeaveRequest {
   user            User        @relation("LeaveRequests", fields: [userId], references: [id], onDelete: Cascade)
   companyId       String?
   company         Company?    @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  startDate       DateTime?   @db.Date
-  endDate         DateTime?   @db.Date
+  startDate       DateTime?
+  endDate         DateTime?
   fromDate        DateTime?
   toDate          DateTime?
   days            Float?
   leaveType       String      @default("ANNUAL")
   reason          String?
-  remarks         String?     @db.Text
+  remarks         String?
   attachmentPath  String?
   attachmentName  String?
   status          LeaveStatus @default(PENDING)
@@ -223,7 +223,7 @@ model LeaveRequest {
   decidedById     String?
   decidedBy       User?       @relation("LeaveDecisions", fields: [decidedById], references: [id])
   decidedAt       DateTime?
-  rejectionReason String?     @db.Text
+  rejectionReason String?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
@@ -260,8 +260,8 @@ model Notification {
   type        String
   recipientId String
   recipient   User      @relation(fields: [recipientId], references: [id], onDelete: Cascade)
-  message     String    @db.Text
-  metadata    Json?
+  message     String
+  metadata    String?
   createdAt   DateTime  @default(now())
   readAt      DateTime?
 

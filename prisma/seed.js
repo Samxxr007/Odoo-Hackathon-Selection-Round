@@ -5,16 +5,28 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding Dayflow Database...');
 
+  // Create Default Company
+  await prisma.company.upsert({
+    where: { id: 'default-company' },
+    update: {},
+    create: {
+      id: 'default-company',
+      name: 'Dayflow Inc.',
+    },
+  });
+
   // Create Users
   const emp1 = await prisma.user.upsert({
     where: { email: 'aswin@dayflow.hr' },
     update: { name: 'Aswin Acharya' },
     create: {
       id: 'emp-001',
+      loginId: 'EMP001',
       email: 'aswin@dayflow.hr',
       name: 'Aswin Acharya',
       role: 'EMPLOYEE',
       department: 'Engineering',
+      companyId: 'default-company',
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
       shiftStartTime: '09:00',
       shiftDurationMinutes: 480, // 8 hours
@@ -27,10 +39,12 @@ async function main() {
     update: { name: 'Rahul Sharma' },
     create: {
       id: 'emp-002',
+      loginId: 'EMP002',
       email: 'rahul@dayflow.hr',
       name: 'Rahul Sharma',
       role: 'EMPLOYEE',
       department: 'Product Design',
+      companyId: 'default-company',
       avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
       shiftStartTime: '09:00',
       shiftDurationMinutes: 480,
@@ -43,10 +57,12 @@ async function main() {
     update: { name: 'Priya Patel' },
     create: {
       id: 'emp-003',
+      loginId: 'EMP003',
       email: 'priya@dayflow.hr',
       name: 'Priya Patel',
       role: 'EMPLOYEE',
       department: 'Marketing',
+      companyId: 'default-company',
       avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
       shiftStartTime: '09:00',
       shiftDurationMinutes: 480,
@@ -59,10 +75,12 @@ async function main() {
     update: { name: 'Sarah Connor' },
     create: {
       id: 'admin-001',
+      loginId: 'ADM001',
       email: 'admin@dayflow.hr',
       name: 'Sarah Connor',
       role: 'ADMIN',
       department: 'Human Resources',
+      companyId: 'default-company',
       avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
       shiftStartTime: '09:00',
       shiftDurationMinutes: 480,
