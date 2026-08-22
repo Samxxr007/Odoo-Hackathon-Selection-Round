@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/components/theme/ThemeProvider'
+import { NotificationDropdown } from '@/components/notifications/NotificationDropdown'
 
 interface UnifiedHeaderProps {
   initialUser?: {
@@ -228,19 +229,8 @@ export function UnifiedHeader({ initialUser }: UnifiedHeaderProps) {
               )}
             </button>
 
-            {/* Notification Bell */}
-            <Link
-              href="/leave/admin"
-              className="relative p-2.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-50 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-800 transition-all cursor-pointer shadow-xs"
-              title="Notifications"
-            >
-              <Bell className="w-4 h-4" />
-              {unreadNotifications > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white font-bold text-[9px] rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900 animate-pulse">
-                  {unreadNotifications}
-                </span>
-              )}
-            </Link>
+            {/* Notification Center Popover */}
+            <NotificationDropdown userRole={user?.role} />
 
             {/* User Avatar Dropdown */}
             <div className="relative" ref={dropdownRef}>

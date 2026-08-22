@@ -599,6 +599,68 @@ async function main() {
     }
   }
 
+  // 9. Seed Realistic Notifications
+  await prisma.notification.createMany({
+    data: [
+      {
+        id: 'notif-001',
+        type: 'LEAVE_PENDING_ADMIN',
+        recipientId: 'emp-001',
+        message: 'Vikram Patel submitted a Sick Leave request (2 days) with medical certificate for Aug 25 - Aug 26.',
+        metadata: { leaveRequestId: 'cmt45s7la001otujs0n1wzn7l', employeeName: 'Vikram Patel' },
+        createdAt: new Date('2026-08-22T08:30:00Z'),
+      },
+      {
+        id: 'notif-002',
+        type: 'LEAVE_PENDING_ADMIN',
+        recipientId: 'emp-001',
+        message: 'Amit Kumar submitted a Paid Time Off request (2 days) for Aug 28 - Aug 29.',
+        metadata: { leaveRequestId: 'cmt45s7ls001qtujsxep2ufkx', employeeName: 'Amit Kumar' },
+        createdAt: new Date('2026-08-22T08:45:00Z'),
+      },
+      {
+        id: 'notif-003',
+        type: 'PASSWORD_RESET',
+        recipientId: 'emp-001',
+        message: 'Security Audit: All 10 employee enterprise accounts and shift telemetries are synced.',
+        metadata: {},
+        createdAt: new Date('2026-08-22T09:00:00Z'),
+      },
+      {
+        id: 'notif-004',
+        type: 'LEAVE_PENDING_ADMIN',
+        recipientId: 'emp-002',
+        message: 'Vikram Patel submitted a Sick Leave request (2 days) with medical certificate for Aug 25 - Aug 26.',
+        metadata: { leaveRequestId: 'cmt45s7la001otujs0n1wzn7l', employeeName: 'Vikram Patel' },
+        createdAt: new Date('2026-08-22T08:30:00Z'),
+      },
+      {
+        id: 'notif-005',
+        type: 'LEAVE_APPROVED',
+        recipientId: 'emp-004',
+        message: 'Your Paid Time Off request for Aug 10 - Aug 12 (3 days) has been APPROVED by HR Manager Priya Sharma.',
+        metadata: { status: 'APPROVED' },
+        createdAt: new Date('2026-08-05T10:00:00Z'),
+      },
+      {
+        id: 'notif-006',
+        type: 'LEAVE_APPROVED',
+        recipientId: 'emp-005',
+        message: 'Your Paid Time Off request for Aug 21 - Aug 23 (2 days) has been APPROVED by HR Manager Priya Sharma.',
+        metadata: { status: 'APPROVED' },
+        createdAt: new Date('2026-08-18T10:00:00Z'),
+      },
+      {
+        id: 'notif-007',
+        type: 'LEAVE_SUBMITTED',
+        recipientId: 'emp-006',
+        message: 'Your Sick Leave application with medical prescription for Aug 25 - Aug 26 has been submitted for approval.',
+        metadata: { status: 'PENDING' },
+        createdAt: new Date('2026-08-22T08:30:00Z'),
+      },
+    ],
+  })
+
   console.log('✅ Master Database Seeding Completed Successfully!')
   console.log('------------------------------------------------------------')
   console.log('👑 Admin Account:   admin@odoo.com / Admin@123456 (Login ID: OIADWR20200001)')
