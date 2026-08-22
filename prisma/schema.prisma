@@ -1,0 +1,164 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum AttendanceStatusType {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  ON_LEAVE
+  UNKNOWN
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// ─────────────────────────────────────────────
+// Company
+// ─────────────────────────────────────────────
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  logoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employees       User[]
+  leaveRequests   LeaveRequest[]
+  yearlySerials   YearlySerial[]
+}
+
+// ─────────────────────────────────────────────
+// User (Admin + Employee)
+// ─────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  loginId      String   @unique
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         Role     @default(EMPLOYEE)
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Profile
+  department       String?
+  designation      String?
+  joiningDate      DateTime?
+  location         String?
+  managerId        String?
+  manager          User?    @relation("EmployeeManager", fields: [managerId], references: [id])
+  subordinates     User[]   @relation("EmployeeManager")
+  profilePhotoUrl  String?
+  isActive         Boolean  @default(true)
+
+  // Auth / Security
+  mustChangePassword        Boolean  @default(false)
+  emailVerified             Boolean  @default(false)
+  verificationToken         String?  @unique
+  verificationTokenExpiry   DateTime?
+
+  // Tracking
+  yearlySerial  Int?
+  joiningYear   Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions       Session[]
+  leaveRequests  LeaveRequest[]
+  attendances    Attendance[]
+}
+
+// ─────────────────────────────────────────────
+// Session
+// ─────────────────────────────────────────────
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+}
+
+// ─────────────────────────────────────────────
+// Yearly Serial (for Employee ID generation)
+// ─────────────────────────────────────────────
+
+model YearlySerial {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  year      Int
+  lastSerial Int    @default(0)
+
+  @@unique([companyId, year])
+}
+
+// ─────────────────────────────────────────────
+// Attendance (owned by Member 3 — stub for contracts)
+// ─────────────────────────────────────────────
+
+model Attendance {
+  id        String              @id @default(cuid())
+  userId    String
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime            @db.Date
+  status    AttendanceStatusType @default(UNKNOWN)
+  checkIn   DateTime?
+  checkOut  DateTime?
+  notes     String?
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@unique([userId, date])
+}
+
+// ─────────────────────────────────────────────
+// LeaveRequest (owned by Member 4 — stub for contracts)
+// ─────────────────────────────────────────────
+
+model LeaveRequest {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyId   String
+  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  startDate   DateTime    @db.Date
+  endDate     DateTime    @db.Date
+  leaveType   String      @default("ANNUAL")
+  reason      String?
+  status      LeaveStatus @default(PENDING)
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
