@@ -27,9 +27,9 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  const isPublicRoute = PUBLIC_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + '/')
-  )
+  const isPublicRoute =
+    pathname.startsWith('/api/auth') ||
+    PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(route + '/'))
 
   const session = await getSessionFromRequest(req)
 
