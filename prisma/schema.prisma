@@ -1,6 +1,6 @@
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -11,8 +11,12 @@ model User {
   id                   String       @id @default(uuid())
   email                String       @unique
   name                 String
-  role                 String       @default("EMPLOYEE") // EMPLOYEE | ADMIN
+  password             String?      @default("password123")
+  role                 String       @default("EMPLOYEE") // EMPLOYEE | ADMIN | HR
   department           String?
+  designation          String?
+  joiningDate          DateTime?
+  isActive             Boolean      @default(true)
   avatarUrl            String?
   shiftStartTime       String       @default("09:00") // HH:mm format
   shiftDurationMinutes Int          @default(480)    // 8 hours (480 minutes)
@@ -22,6 +26,12 @@ model User {
 
   attendances          Attendance[]
   leaves               Leave[]
+
+  // Member 4 relations
+  leaveAllocations     LeaveAllocation[]
+  leaveRequests        LeaveRequest[]    @relation("LeaveRequests")
+  leaveDecisions       LeaveRequest[]    @relation("LeaveDecisions")
+  notifications        Notification[]
 }
 
 model Attendance {
@@ -69,4 +79,70 @@ model Holiday {
   name            String
   isNonWorkingDay Boolean  @default(true)
   createdAt       DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────
+// Member 4 — Leave, Allocation & Notification Models
+// ─────────────────────────────────────────────
+
+model LeaveAllocation {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leaveType String   // PAID_TIME_OFF | SICK_LEAVE | UNPAID_LEAVE
+  year      Int
+  totalDays Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, leaveType, year])
+  @@index([userId, year])
+}
+
+model LeaveRequest {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation("LeaveRequests", fields: [userId], references: [id], onDelete: Cascade)
+  leaveType       String    // PAID_TIME_OFF | SICK_LEAVE | UNPAID_LEAVE
+  fromDate        DateTime
+  toDate          DateTime
+  days            Float
+  status          String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  remarks         String?   @db.Text
+  attachmentPath  String?
+  attachmentName  String?
+
+  requestedAt     DateTime  @default(now())
+  decidedById     String?
+  decidedBy       User?     @relation("LeaveDecisions", fields: [decidedById], references: [id])
+  decidedAt       DateTime?
+  rejectionReason String?   @db.Text
+
+  @@index([userId, status])
+  @@index([fromDate, toDate])
+  @@index([userId, fromDate, toDate])
+}
+
+model PublicHoliday {
+  id   String   @id @default(uuid())
+  name String
+  date DateTime @unique
+  year Int
+
+  @@index([year])
+}
+
+model Notification {
+  id          String    @id @default(uuid())
+  type        String    // LEAVE_SUBMITTED | LEAVE_APPROVED | LEAVE_REJECTED | LEAVE_PENDING_ADMIN | PASSWORD_RESET
+  recipientId String
+  recipient   User      @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  message     String    @db.Text
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  readAt      DateTime?
+
+  @@index([recipientId, readAt])
+  @@index([recipientId, createdAt])
 }
