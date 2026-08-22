@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentSession, sanitizeProfileForViewer, canEditPersonalProfile, canEditOrgFields } from '@/lib/auth';
-import { getDbUserById, updateEmployeeProfileInDb, updatePrivateInfoInDb, updateBankDetailsInDb } from '@/lib/db';
+import { getDbUserById, getDbUserByIdAsync, updateEmployeeProfileInDb, updatePrivateInfoInDb, updateBankDetailsInDb } from '@/lib/db';
 import { ApiResponse, EmployeeProfile } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const targetUserId = searchParams.get('userId') || session.id;
 
-    const targetUser = getDbUserById(targetUserId);
+    const targetUser = await getDbUserByIdAsync(targetUserId);
     if (!targetUser) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: 'Employee profile not found' },
@@ -39,7 +39,7 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const targetUserId = body.id || body.userId || session.id;
 
-    const targetUser = getDbUserById(targetUserId);
+    const targetUser = await getDbUserByIdAsync(targetUserId);
     if (!targetUser) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: 'Employee not found' },

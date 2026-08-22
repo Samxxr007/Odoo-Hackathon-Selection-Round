@@ -392,7 +392,90 @@ export function getAllDbUsers(): DbUserRecord[] {
 }
 
 export function getDbUserById(id: string): DbUserRecord | null {
-  return databaseUsers.find(u => u.id === id || u.loginId === id) || null
+  return databaseUsers.find(u => u.id === id || u.loginId === id || u.profile.email.toLowerCase() === id.toLowerCase()) || null
+}
+
+export async function getDbUserByIdAsync(id: string): Promise<DbUserRecord | null> {
+  const existing = databaseUsers.find(u => u.id === id || u.loginId === id || u.profile.email.toLowerCase() === id.toLowerCase())
+  if (existing) return existing
+
+  try {
+    const user = await db.user.findFirst({
+      where: {
+        OR: [
+          { id },
+          { loginId: id },
+          { email: id },
+        ],
+      },
+      include: { company: true },
+    })
+
+    if (!user) return null
+
+    const record: DbUserRecord = {
+      id: user.id,
+      loginId: user.loginId || user.id,
+      passwordHash: user.passwordHash,
+      mustChangePassword: user.mustChangePassword,
+      role: user.role as any,
+      profile: {
+        id: user.id,
+        loginId: user.loginId || user.id,
+        name: user.name,
+        email: user.email,
+        mobile: user.phone || '+91 98765 43210',
+        company: user.company?.name || 'Odoo HRMS Company',
+        department: user.department || 'General',
+        designation: user.designation || 'Employee',
+        manager: 'Manager',
+        location: user.location || 'Gandhinagar, Gujarat',
+        dateOfJoining: user.joiningDate ? user.joiningDate.toISOString().split('T')[0] : '2026-01-15',
+        avatar: user.avatarUrl || user.profilePhotoUrl || '',
+        resume: {
+          about: `${user.name} is an employee at ${user.company?.name || 'Odoo HRMS Company'}.`,
+          whatILoveAboutJob: 'Building enterprise software solutions and collaborating with modern teams.',
+          interestsAndHobbies: 'Technology, Problem Solving, Continuous Learning.',
+          skills: [
+            { id: 's1', name: 'Software Engineering', level: 'Intermediate', category: 'Engineering' },
+            { id: 's2', name: 'Communication', level: 'Advanced', category: 'Soft Skills' },
+          ],
+          certifications: [],
+        },
+      },
+      privateInfo: {
+        dateOfBirth: '1995-06-15',
+        residingAddress: user.location || 'Gandhinagar, Gujarat',
+        nationality: 'Indian',
+        personalEmail: user.email,
+        gender: 'Not Specified',
+        maritalStatus: 'Single',
+        dateOfJoining: user.joiningDate ? user.joiningDate.toISOString().split('T')[0] : '2026-01-15',
+      },
+      bankDetails: {
+        accountNumber: '123456789012',
+        bankName: 'HDFC Bank',
+        ifsc: 'HDFC0001234',
+        employeeCode: user.loginId || user.id,
+        pan: 'ABCDE1234F',
+        uan: '100900800700',
+      },
+      salaryConfig: {
+        monthlyWage: 50000,
+        workingDaysPerWeek: 5,
+        breakTimeMinutes: 60,
+        basicPercentage: 50,
+        hraPercentage: 50,
+      },
+      documents: [],
+    }
+
+    databaseUsers.push(record)
+    return record
+  } catch (e) {
+    console.error('Error fetching Prisma user in getDbUserByIdAsync:', e)
+    return null
+  }
 }
 
 export function getDbUserByEmail(email: string): DbUserRecord | null {

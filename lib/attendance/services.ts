@@ -80,6 +80,7 @@ export async function toggleAttendance(
       const newRecord = await tx.attendance.create({
         data: {
           employeeId,
+          userId: employeeId,
           businessDate,
           checkIn: timestamp,
           checkOut: null,
@@ -153,12 +154,13 @@ export async function getTodayAttendance(
 ) {
   const businessDate = getBusinessDateString(now);
 
-  const record = await prisma.attendance.findUnique({
+  const record = await prisma.attendance.findFirst({
     where: {
-      unique_employee_daily_attendance: {
-        employeeId,
-        businessDate,
-      },
+      businessDate,
+      OR: [
+        { employeeId },
+        { userId: employeeId },
+      ],
     },
   });
 
@@ -192,7 +194,14 @@ export async function getEmployeeMonthlyAttendance(
   });
   const holidayMap = new Map(holidays.map((h) => [h.date, h]));
 
-  const leaves = await prisma.leave.findMany({
+  const leaveRequests = await prisma.leaveRequest.findMany({
+    where: {
+      userId: employeeId,
+      status: 'APPROVED',
+    },
+  });
+
+  const legacyLeaves = await prisma.leave.findMany({
     where: {
       employeeId,
       status: 'APPROVED',
@@ -205,8 +214,11 @@ export async function getEmployeeMonthlyAttendance(
 
   const attendances = await prisma.attendance.findMany({
     where: {
-      employeeId,
       businessDate: { startsWith: monthString },
+      OR: [
+        { employeeId },
+        { userId: employeeId },
+      ],
     },
     orderBy: { businessDate: 'asc' },
   });
@@ -215,7 +227,18 @@ export async function getEmployeeMonthlyAttendance(
   const records = days.map((dateStr) => {
     const isWeekend = isWeekendDay(dateStr);
     const holiday = holidayMap.get(dateStr);
-    const activeLeave = leaves.find((l) => l.startDate <= dateStr && l.endDate >= dateStr);
+
+    const dayStart = new Date(`${dateStr}T00:00:00.000Z`);
+    const dayEnd = new Date(`${dateStr}T23:59:59.999Z`);
+
+    const activeLeaveRequest = leaveRequests.find((lr) => {
+      const from = lr.fromDate || lr.startDate;
+      const to = lr.toDate || lr.endDate;
+      return from && to && from <= dayEnd && to >= dayStart;
+    });
+
+    const activeLegacyLeave = legacyLeaves.find((l) => l.startDate <= dateStr && l.endDate >= dateStr);
+    const activeLeave = activeLeaveRequest || activeLegacyLeave;
     const att = attendanceMap.get(dateStr);
 
     let statusDisplay: 'PRESENT' | 'ABSENT' | 'HALF_DAY' | 'LEAVE' | 'HOLIDAY' | 'WEEKEND' = 'ABSENT';
@@ -277,8 +300,8 @@ export async function getAdminDailyAttendance(params: {
 }) {
   const { date, search, status } = params;
 
-  // Build employee filter
-  const whereUser: any = { role: 'EMPLOYEE' };
+  // Build employee filter — include ALL employees and staff
+  const whereUser: any = {};
   if (search) {
     whereUser.OR = [
       { name: { contains: search } },
@@ -298,20 +321,39 @@ export async function getAdminDailyAttendance(params: {
   const attendances = await prisma.attendance.findMany({
     where: { businessDate: date },
   });
-  const attendanceMap = new Map(attendances.map((a) => [a.employeeId, a]));
+  const attendanceMap = new Map(
+    attendances.flatMap((a) => [
+      [a.employeeId, a],
+      [a.userId, a],
+    ])
+  );
 
-  const leaves = await prisma.leave.findMany({
+  const startOfDay = new Date(`${date}T00:00:00.000Z`);
+  const endOfDay = new Date(`${date}T23:59:59.999Z`);
+
+  const approvedLeaveRequests = await prisma.leaveRequest.findMany({
+    where: {
+      status: 'APPROVED',
+      OR: [
+        { fromDate: { lte: endOfDay }, toDate: { gte: startOfDay } },
+        { startDate: { lte: endOfDay }, endDate: { gte: startOfDay } },
+      ],
+    },
+  });
+  const leaveRequestMap = new Map(approvedLeaveRequests.map((l) => [l.userId, l]));
+
+  const legacyLeaves = await prisma.leave.findMany({
     where: {
       status: 'APPROVED',
       startDate: { lte: date },
       endDate: { gte: date },
     },
   });
-  const leaveMap = new Map(leaves.map((l) => [l.employeeId, l]));
+  const legacyLeaveMap = new Map(legacyLeaves.map((l) => [l.employeeId, l]));
 
   let records = employees.map((emp) => {
     const att = attendanceMap.get(emp.id);
-    const activeLeave = leaveMap.get(emp.id);
+    const activeLeave = leaveRequestMap.get(emp.id) || legacyLeaveMap.get(emp.id);
 
     let statusDisplay: 'PRESENT' | 'ABSENT' | 'HALF_DAY' | 'LEAVE' | 'HOLIDAY' | 'WEEKEND' = 'ABSENT';
     let checkInStr = '—';

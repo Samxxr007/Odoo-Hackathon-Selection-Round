@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentSession, sanitizeProfileForViewer, canEditPersonalProfile, canEditOrgFields } from '@/lib/auth';
-import { getDbUserById, updateEmployeeProfileInDb, updatePrivateInfoInDb, updateBankDetailsInDb } from '@/lib/db';
+import { getDbUserById, getDbUserByIdAsync, updateEmployeeProfileInDb, updatePrivateInfoInDb, updateBankDetailsInDb } from '@/lib/db';
 import { ApiResponse, EmployeeProfile } from '@/lib/types';
 
 export async function GET(
@@ -12,7 +12,7 @@ export async function GET(
     const resolvedParams = await params;
     const targetUserId = resolvedParams.id;
 
-    const targetUser = getDbUserById(targetUserId);
+    const targetUser = await getDbUserByIdAsync(targetUserId);
     if (!targetUser) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: 'Employee profile not found' },
@@ -44,7 +44,7 @@ export async function PUT(
     const targetUserId = resolvedParams.id;
     const body = await req.json();
 
-    const targetUser = getDbUserById(targetUserId);
+    const targetUser = await getDbUserByIdAsync(targetUserId);
     if (!targetUser) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: 'Employee not found' },
