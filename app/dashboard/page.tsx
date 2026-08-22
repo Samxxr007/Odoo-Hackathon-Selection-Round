@@ -15,59 +15,65 @@ export default async function DashboardPage() {
     redirect('/signin')
   }
 
-  // 1. Fetch all active employees from the database
-  const employees = await db.user.findMany({
-    where: { isActive: true },
-    orderBy: { createdAt: 'asc' },
-    select: {
-      id: true,
-      loginId: true,
-      name: true,
-      email: true,
-      phone: true,
-      role: true,
-      companyId: true,
-      department: true,
-      designation: true,
-      joiningDate: true,
-      location: true,
-      managerId: true,
-      profilePhotoUrl: true,
-      avatarUrl: true,
-      isActive: true,
-      mustChangePassword: true,
-      emailVerified: true,
-      createdAt: true,
-      updatedAt: true,
-      manager: { select: { id: true, name: true } },
-    },
-  })
+  // Fetch data with DB-down fallback
+  let employees: any[] = []
+  let todayAttendances: any[] = []
+  let activeLeaves: any[] = []
 
-  // 2. Fetch today's attendance records
-  const todayStr = '2026-08-22'
-  const todayDate = new Date('2026-08-22T00:00:00.000Z')
+  try {
+    const todayStr = new Date().toISOString().split('T')[0]
+    const todayDate = new Date(`${todayStr}T00:00:00.000Z`)
 
-  const todayAttendances = await db.attendance.findMany({
-    where: {
-      OR: [
-        { date: todayDate },
-        { businessDate: todayStr },
-      ],
-    },
-  })
+    employees = await db.user.findMany({
+      where: { isActive: true },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        loginId: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        companyId: true,
+        department: true,
+        designation: true,
+        joiningDate: true,
+        location: true,
+        managerId: true,
+        profilePhotoUrl: true,
+        avatarUrl: true,
+        isActive: true,
+        mustChangePassword: true,
+        emailVerified: true,
+        createdAt: true,
+        updatedAt: true,
+        manager: { select: { id: true, name: true } },
+      },
+    })
+
+    todayAttendances = await db.attendance.findMany({
+      where: {
+        OR: [
+          { date: todayDate },
+          { businessDate: todayStr },
+        ],
+      },
+    })
+
+    activeLeaves = await db.leaveRequest.findMany({
+      where: {
+        status: 'APPROVED',
+        OR: [
+          { startDate: { lte: todayDate }, endDate: { gte: todayDate } },
+          { fromDate: { lte: todayDate }, toDate: { gte: todayDate } },
+        ],
+      },
+    })
+  } catch (err) {
+    console.warn('[Dashboard] DB unreachable, rendering empty state:', err)
+  }
 
   const attendanceMap = new Map(todayAttendances.map((a) => [a.userId, a]))
-
-  // 3. Fetch active leaves for today
-  const activeLeaves = await db.leaveRequest.findMany({
-    where: {
-      status: 'APPROVED',
-      OR: [
-        { startDate: { lte: todayDate }, endDate: { gte: todayDate } },
-        { fromDate: { lte: todayDate }, toDate: { gte: todayDate } },
-      ],
-    },
-  })
   const leaveUserIds = new Set(activeLeaves.map((l) => l.userId))
 
   // 4. Map employees with their live status
