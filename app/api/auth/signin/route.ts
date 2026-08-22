@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
         role: user.role,
         mustChangePassword: user.mustChangePassword,
         companyId: user.companyId,
-        companyName: user.company.name,
+        companyName: user.company?.name ?? 'Odoo HRMS',
       },
       redirectTo: user.mustChangePassword ? '/change-password' : '/dashboard',
     })

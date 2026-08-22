@@ -36,8 +36,8 @@ export async function GET(req: NextRequest) {
       if (user && user.isActive) {
         const authUser = {
           ...user,
-          companyName: user.company.name,
-          companyLogoUrl: user.company.logoUrl,
+          companyName: user.company?.name ?? 'Odoo HRMS',
+          companyLogoUrl: user.company?.logoUrl ?? null,
         }
         return NextResponse.json({
           success: true,

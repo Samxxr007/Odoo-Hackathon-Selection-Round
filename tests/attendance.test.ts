@@ -17,10 +17,18 @@ describe('Dayflow Attendance Module — End-to-End Core Business Logic Suite', (
     await prisma.user.deleteMany({ where: { id: { in: [testEmpId, otherEmpId, adminId] } } });
     await prisma.holiday.deleteMany({ where: { date: '2026-08-15' } });
 
+    const testCompany = await prisma.company.upsert({
+      where: { name: 'Dayflow Test Company' },
+      update: {},
+      create: { name: 'Dayflow Test Company' },
+    });
+
     // Seed test users
     await prisma.user.create({
       data: {
         id: testEmpId,
+        loginId: testEmpId,
+        companyId: testCompany.id,
         email: 'test.emp101@dayflow.hr',
         name: 'Test Employee One',
         role: 'EMPLOYEE',
@@ -32,6 +40,8 @@ describe('Dayflow Attendance Module — End-to-End Core Business Logic Suite', (
     await prisma.user.create({
       data: {
         id: otherEmpId,
+        loginId: otherEmpId,
+        companyId: testCompany.id,
         email: 'test.emp102@dayflow.hr',
         name: 'Test Employee Two',
         role: 'EMPLOYEE',
@@ -43,6 +53,8 @@ describe('Dayflow Attendance Module — End-to-End Core Business Logic Suite', (
     await prisma.user.create({
       data: {
         id: adminId,
+        loginId: adminId,
+        companyId: testCompany.id,
         email: 'test.admin101@dayflow.hr',
         name: 'Test Admin User',
         role: 'ADMIN',

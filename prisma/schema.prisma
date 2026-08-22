@@ -54,14 +54,14 @@ model Company {
 
 model User {
   id           String   @id @default(cuid())
-  loginId      String   @unique
+  loginId      String   @unique @default("")
   email        String   @unique
-  passwordHash String
+  passwordHash String   @default("")
   name         String
   phone        String?
   role         Role     @default(EMPLOYEE)
-  companyId    String
-  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId    String   @default("default-company")
+  company      Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   // Profile
   department       String?

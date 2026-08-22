@@ -128,7 +128,7 @@ export async function requireAdmin(req: NextRequest): Promise<AuthSession> {
 export function verifyEmployeeOwnership(session: AuthSession, targetEmployeeId: string) {
   if (session.role === 'ADMIN') return true;
   if (session.userId === targetEmployeeId) return true;
-  throw new AttendanceError('Forbidden: Access denied.', 'UNAUTHORIZED', 403);
+  throw new AttendanceError("Forbidden: You do not have permission to access another employee's attendance data.", 'UNAUTHORIZED', 403);
 }
 
 // ─────────────────────────────────────────────
