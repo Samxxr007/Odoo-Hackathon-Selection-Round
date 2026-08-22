@@ -1,0 +1,72 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                   String       @id @default(uuid())
+  email                String       @unique
+  name                 String
+  role                 String       @default("EMPLOYEE") // EMPLOYEE | ADMIN
+  department           String?
+  avatarUrl            String?
+  shiftStartTime       String       @default("09:00") // HH:mm format
+  shiftDurationMinutes Int          @default(480)    // 8 hours (480 minutes)
+  gracePeriodMinutes   Int          @default(15)     // 15 minutes grace period
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  attendances          Attendance[]
+  leaves               Leave[]
+}
+
+model Attendance {
+  id                String    @id @default(uuid())
+  employeeId        String
+  employee          User      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  businessDate      String    // YYYY-MM-DD string in company timezone
+  checkIn           DateTime  // UTC timestamp
+  checkOut          DateTime? // UTC timestamp
+  workHoursMinutes  Int?      // Duration in minutes
+  extraHoursMinutes Int?      // Overtime in minutes
+  status            String    @default("PRESENT") // PRESENT | ABSENT | HALF_DAY | LEAVE
+  isLate            Boolean   @default(false)
+  isCorrected       Boolean   @default(false)
+  correctedBy       String?
+  correctedAt       DateTime?
+  correctionReason  String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([employeeId, businessDate], name: "unique_employee_daily_attendance")
+  @@index([employeeId, businessDate])
+  @@index([businessDate])
+  @@index([status])
+}
+
+model Leave {
+  id          String   @id @default(uuid())
+  employeeId  String
+  employee    User     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  startDate   String   // YYYY-MM-DD
+  endDate     String   // YYYY-MM-DD
+  type        String   @default("PAID") // PAID | UNPAID | SICK
+  status      String   @default("PENDING") // APPROVED | PENDING | REJECTED
+  reason      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([employeeId, startDate, endDate])
+}
+
+model Holiday {
+  id              String   @id @default(uuid())
+  date            String   @unique // YYYY-MM-DD
+  name            String
+  isNonWorkingDay Boolean  @default(true)
+  createdAt       DateTime @default(now())
+}
